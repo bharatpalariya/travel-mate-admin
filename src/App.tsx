@@ -5,6 +5,7 @@ import { DataProvider } from './contexts/DataContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/Layout/AdminLayout';
 import Login from './pages/Login';
+import AdminSetup from './pages/AdminSetup';
 import Dashboard from './pages/Dashboard';
 import PackageList from './pages/Packages/PackageList';
 import PackageForm from './pages/Packages/PackageForm';
@@ -18,6 +19,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/admin-setup" element={<AdminSetup />} />
             <Route path="/admin" element={
               <ProtectedRoute>
                 <AdminLayout />
@@ -30,7 +32,7 @@ function App() {
               <Route path="packages/:id/edit" element={<PackageForm />} />
               <Route path="bookings" element={<Bookings />} />
             </Route>
-            <Route path="/" element={<Navigate to="/admin\" replace />} />
+            <Route path="/" element={<Navigate to="/admin" replace />} />
           </Routes>
         </Router>
       </DataProvider>

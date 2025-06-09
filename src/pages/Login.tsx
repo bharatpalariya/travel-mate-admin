@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
+import { Navigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, Lock, Mail, AlertCircle, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
@@ -117,20 +117,31 @@ const Login: React.FC = () => {
           </form>
 
           <div className="mt-6 space-y-3">
+            <div className="text-center">
+              <Link
+                to="/admin-setup"
+                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
+              >
+                <UserPlus className="h-4 w-4 mr-1" />
+                Need to create an admin account?
+              </Link>
+            </div>
+
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <h4 className="text-sm font-medium text-blue-800 mb-1">Default Admin Credentials</h4>
+              <div className="text-xs text-blue-700 space-y-1">
+                <div><strong>Email:</strong> admin@travelmate.com</div>
+                <div><strong>Password:</strong> TravelAdmin2025!</div>
+              </div>
+            </div>
+            
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
               <h4 className="text-sm font-medium text-amber-800 mb-1">Having trouble signing in?</h4>
               <ul className="text-xs text-amber-700 space-y-1">
                 <li>• Verify your email and password are correct</li>
                 <li>• Check if your admin account exists in Supabase</li>
-                <li>• Ensure email confirmation is completed if required</li>
+                <li>• Try creating a new admin account if needed</li>
               </ul>
-            </div>
-            
-            <div className="p-3 bg-gray-50 rounded-md">
-              <p className="text-xs text-gray-600">
-                <strong>Admin Setup:</strong><br />
-                Use your Supabase admin credentials to sign in. Make sure you have set up authentication in your Supabase project and created an admin user account.
-              </p>
             </div>
           </div>
         </div>
