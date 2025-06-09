@@ -32,7 +32,7 @@ function App() {
               <Route path="packages/:id/edit" element={<PackageForm />} />
               <Route path="bookings" element={<Bookings />} />
             </Route>
-            <Route path="/" element={<Navigate to="/admin" replace />} />
+            <Route path="/" element={<Navigate to="/admin\" replace />} />
           </Routes>
         </Router>
       </DataProvider>
