@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
@@ -30,10 +30,10 @@ const Login: React.FC = () => {
     try {
       const success = await login(formData.email, formData.password);
       if (!success) {
-        setError('Invalid email or password');
+        setError('Invalid email or password. Please check your credentials and try again.');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError('An error occurred during login. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -49,7 +49,8 @@ const Login: React.FC = () => {
 
         <div className="bg-white p-8 rounded-lg shadow-md">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start space-x-2">
+              <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
@@ -115,12 +116,22 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-6 p-3 bg-gray-50 rounded-md">
-            <p className="text-xs text-gray-600">
-              <strong>Note:</strong><br />
-              Please use your Supabase admin credentials to sign in.
-              Make sure you have set up authentication in your Supabase project.
-            </p>
+          <div className="mt-6 space-y-3">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+              <h4 className="text-sm font-medium text-amber-800 mb-1">Having trouble signing in?</h4>
+              <ul className="text-xs text-amber-700 space-y-1">
+                <li>• Verify your email and password are correct</li>
+                <li>• Check if your admin account exists in Supabase</li>
+                <li>• Ensure email confirmation is completed if required</li>
+              </ul>
+            </div>
+            
+            <div className="p-3 bg-gray-50 rounded-md">
+              <p className="text-xs text-gray-600">
+                <strong>Admin Setup:</strong><br />
+                Use your Supabase admin credentials to sign in. Make sure you have set up authentication in your Supabase project and created an admin user account.
+              </p>
+            </div>
           </div>
         </div>
       </div>
