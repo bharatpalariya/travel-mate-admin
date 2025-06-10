@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Users, Calendar, TrendingUp, DollarSign, UserCheck, CreditCard, ShoppingCart } from 'lucide-react';
+import { Package, Users, Calendar, TrendingUp, DollarSign, UserCheck, CreditCard, ShoppingCart, UserPlus, Activity } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import StatCard from '../components/UI/StatCard';
 
@@ -31,26 +31,125 @@ const Dashboard: React.FC = () => {
 
       {/* User Statistics */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">User Analytics</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">User Analytics</h2>
+          <Link
+            to="/admin/admin-management"
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+          >
+            <UserPlus className="w-4 h-4 mr-1" />
+            Manage Admin Users
+          </Link>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard
-            title="Total Users"
-            value={userStats.totalUsers}
-            icon={Users}
-            color="blue"
-          />
-          <StatCard
-            title="Active Users"
-            value={userStats.activeUsers}
-            icon={UserCheck}
-            color="green"
-          />
-          <StatCard
-            title="New Users This Month"
-            value={userStats.newUsersThisMonth}
-            icon={TrendingUp}
-            color="yellow"
-          />
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Total Users</p>
+                <p className="text-3xl font-bold mt-1">{userStats.totalUsers.toLocaleString()}</p>
+                <p className="text-blue-100 text-xs mt-1">Registered customers</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm font-medium">Active Users</p>
+                <p className="text-3xl font-bold mt-1">{userStats.activeUsers.toLocaleString()}</p>
+                <p className="text-green-100 text-xs mt-1">Users with bookings (30 days)</p>
+              </div>
+              <div className="w-12 h-12 bg-green-400 rounded-lg flex items-center justify-center">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-yellow-100 text-sm font-medium">New Users This Month</p>
+                <p className="text-3xl font-bold mt-1">{userStats.newUsersThisMonth.toLocaleString()}</p>
+                <p className="text-yellow-100 text-xs mt-1">Monthly growth</p>
+              </div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
+                <UserPlus className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* User Engagement Metrics */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">User Engagement</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">User Activation Rate</span>
+                <span className="font-semibold text-gray-900">
+                  {userStats.totalUsers > 0 
+                    ? Math.round((userStats.activeUsers / userStats.totalUsers) * 100)
+                    : 0}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full" 
+                  style={{ 
+                    width: `${userStats.totalUsers > 0 
+                      ? (userStats.activeUsers / userStats.totalUsers) * 100 
+                      : 0}%` 
+                  }}
+                ></div>
+              </div>
+              
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-sm text-gray-600">Monthly Growth Rate</span>
+                <span className="font-semibold text-gray-900">
+                  {userStats.totalUsers > 0 
+                    ? Math.round((userStats.newUsersThisMonth / userStats.totalUsers) * 100)
+                    : 0}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-yellow-600 h-2 rounded-full" 
+                  style={{ 
+                    width: `${userStats.totalUsers > 0 
+                      ? Math.min((userStats.newUsersThisMonth / userStats.totalUsers) * 100, 100)
+                      : 0}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">User Breakdown</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Active Users</span>
+                <span className="font-semibold text-green-600">{userStats.activeUsers}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Inactive Users</span>
+                <span className="font-semibold text-gray-600">
+                  {userStats.totalUsers - userStats.activeUsers}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">New This Month</span>
+                <span className="font-semibold text-blue-600">{userStats.newUsersThisMonth}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                <span className="text-sm font-medium text-gray-900">Total Users</span>
+                <span className="font-bold text-gray-900">{userStats.totalUsers}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -63,6 +162,7 @@ const Dashboard: React.FC = () => {
               <div>
                 <p className="text-green-100 text-sm font-medium">Total Revenue</p>
                 <p className="text-3xl font-bold mt-1">₹{paymentStats.totalRevenue.toLocaleString()}</p>
+                <p className="text-green-100 text-xs mt-1">From completed orders</p>
               </div>
               <div className="w-12 h-12 bg-green-400 rounded-lg flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-white" />
@@ -89,9 +189,46 @@ const Dashboard: React.FC = () => {
               <div>
                 <p className="text-purple-100 text-sm font-medium">Avg Order Value</p>
                 <p className="text-3xl font-bold mt-1">₹{Math.round(paymentStats.averageOrderValue).toLocaleString()}</p>
+                <p className="text-purple-100 text-xs mt-1">Per completed order</p>
               </div>
               <div className="w-12 h-12 bg-purple-400 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Breakdown */}
+        <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Breakdown</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{paymentStats.completedOrders}</div>
+              <div className="text-sm text-gray-600">Completed</div>
+              <div className="text-xs text-gray-500">
+                {paymentStats.totalOrders > 0 
+                  ? Math.round((paymentStats.completedOrders / paymentStats.totalOrders) * 100)
+                  : 0}% of total
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{paymentStats.pendingOrders}</div>
+              <div className="text-sm text-gray-600">Pending</div>
+              <div className="text-xs text-gray-500">
+                {paymentStats.totalOrders > 0 
+                  ? Math.round((paymentStats.pendingOrders / paymentStats.totalOrders) * 100)
+                  : 0}% of total
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {paymentStats.totalOrders - paymentStats.completedOrders - paymentStats.pendingOrders}
+              </div>
+              <div className="text-sm text-gray-600">Cancelled</div>
+              <div className="text-xs text-gray-500">
+                {paymentStats.totalOrders > 0 
+                  ? Math.round(((paymentStats.totalOrders - paymentStats.completedOrders - paymentStats.pendingOrders) / paymentStats.totalOrders) * 100)
+                  : 0}% of total
               </div>
             </div>
           </div>
