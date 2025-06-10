@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Package, Users, BarChart3, LogOut } from 'lucide-react';
+import { Package, Users, BarChart3, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar: React.FC = () => {
@@ -9,7 +9,8 @@ const Sidebar: React.FC = () => {
   const navItems = [
     { to: '/admin', icon: BarChart3, label: 'Dashboard', exact: true },
     { to: '/admin/packages', icon: Package, label: 'Packages' },
-    { to: '/admin/bookings', icon: Users, label: 'Bookings' }
+    { to: '/admin/bookings', icon: Users, label: 'Bookings' },
+    { to: '/admin/admin-management', icon: Shield, label: 'Admin Users' }
   ];
 
   return (

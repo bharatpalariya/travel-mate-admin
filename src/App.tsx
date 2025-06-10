@@ -11,6 +11,7 @@ import PackageList from './pages/Packages/PackageList';
 import PackageForm from './pages/Packages/PackageForm';
 import PackageDetail from './pages/Packages/PackageDetail';
 import Bookings from './pages/Bookings';
+import AdminManagement from './pages/AdminManagement';
 
 function App() {
   return (
@@ -31,8 +32,9 @@ function App() {
               <Route path="packages/:id" element={<PackageDetail />} />
               <Route path="packages/:id/edit" element={<PackageForm />} />
               <Route path="bookings" element={<Bookings />} />
+              <Route path="admin-management" element={<AdminManagement />} />
             </Route>
-            <Route path="/" element={<Navigate to="/admin\" replace />} />
+            <Route path="/" element={<Navigate to="/admin" replace />} />
           </Routes>
         </Router>
       </DataProvider>
