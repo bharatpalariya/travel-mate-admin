@@ -61,6 +61,20 @@ export interface Notification {
   updated_at: string | null;
 }
 
+export interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersThisMonth: number;
+}
+
+export interface PaymentStats {
+  totalRevenue: number;
+  totalOrders: number;
+  completedOrders: number;
+  pendingOrders: number;
+  averageOrderValue: number;
+}
+
 export const DESTINATIONS = [
   'Goa', 'Kerala', 'Rajasthan', 'Himachal Pradesh', 'Kashmir', 'Tamil Nadu',
   'Karnataka', 'Maharashtra', 'Uttarakhand', 'West Bengal', 'Andaman & Nicobar',

@@ -5,11 +5,14 @@ import { DataProvider } from './contexts/DataContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/Layout/AdminLayout';
 import Login from './pages/Login';
+import AdminSetup from './pages/AdminSetup';
 import Dashboard from './pages/Dashboard';
 import PackageList from './pages/Packages/PackageList';
 import PackageForm from './pages/Packages/PackageForm';
 import PackageDetail from './pages/Packages/PackageDetail';
 import Bookings from './pages/Bookings';
+import AdminManagement from './pages/AdminManagement';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -18,6 +21,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/admin-setup" element={<AdminSetup />} />
             <Route path="/admin" element={
               <ProtectedRoute>
                 <AdminLayout />
@@ -29,6 +33,8 @@ function App() {
               <Route path="packages/:id" element={<PackageDetail />} />
               <Route path="packages/:id/edit" element={<PackageForm />} />
               <Route path="bookings" element={<Bookings />} />
+              <Route path="admin-management" element={<AdminManagement />} />
+              <Route path="users" element={<Users />} />
             </Route>
             <Route path="/" element={<Navigate to="/admin\" replace />} />
           </Routes>
