@@ -34,7 +34,7 @@ function App() {
               <Route path="bookings" element={<Bookings />} />
               <Route path="admin-management" element={<AdminManagement />} />
             </Route>
-            <Route path="/" element={<Navigate to="/admin" replace />} />
+            <Route path="/" element={<Navigate to="/admin\" replace />} />
           </Routes>
         </Router>
       </DataProvider>
