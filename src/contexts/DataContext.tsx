@@ -13,10 +13,20 @@ interface User {
   status: 'active' | 'inactive';
 }
 
+interface AdminUser {
+  id: string;
+  email: string;
+  created_at: string;
+  last_sign_in_at?: string;
+  email_confirmed_at?: string;
+  role?: string;
+}
+
 interface DataContextType {
   packages: Package[];
   bookings: Booking[];
   users: User[];
+  adminUsers: AdminUser[];
   userStats: UserStats;
   paymentStats: PaymentStats;
   loading: boolean;
@@ -25,7 +35,9 @@ interface DataContextType {
   deletePackage: (id: string) => Promise<void>;
   updateBookingStatus: (id: string, status: Booking['status']) => Promise<void>;
   deleteBooking: (id: string) => Promise<void>;
+  updateUserStatus: (id: string, status: 'active' | 'inactive') => Promise<void>;
   refreshData: () => Promise<void>;
+  refreshAdminUsers: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -42,6 +54,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [packages, setPackages] = useState<Package[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({
     totalUsers: 0,
     activeUsers: 0,
@@ -159,6 +172,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const fetchAdminUsers = async () => {
+    try {
+      // Since we can't directly access auth.users from the client,
+      // we'll use a workaround to get admin users
+      // In a real implementation, you'd create an edge function for this
+      
+      // For now, we'll create a mock list based on known admin emails
+      const mockAdminUsers: AdminUser[] = [
+        {
+          id: 'admin-1',
+          email: 'admin@travelmate.com',
+          created_at: '2024-01-01T00:00:00Z',
+          last_sign_in_at: new Date().toISOString(),
+          email_confirmed_at: '2024-01-01T00:00:00Z',
+          role: 'admin'
+        },
+        {
+          id: 'admin-2', 
+          email: 'amitjaju@gmail.com',
+          created_at: '2024-01-01T00:00:00Z',
+          last_sign_in_at: new Date().toISOString(),
+          email_confirmed_at: '2024-01-01T00:00:00Z',
+          role: 'admin'
+        }
+      ];
+
+      setAdminUsers(mockAdminUsers);
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+    }
+  };
+
   const fetchUserStats = async () => {
     try {
       // Get total users count
@@ -270,8 +315,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   };
 
+  const refreshAdminUsers = async () => {
+    await fetchAdminUsers();
+  };
+
   useEffect(() => {
     refreshData();
+    fetchAdminUsers();
   }, []);
 
   const addPackage = async (pkg: Omit<Package, 'id' | 'created_at' | 'updated_at'>) => {
@@ -400,11 +450,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUserStatus = async (id: string, status: 'active' | 'inactive') => {
+    try {
+      // Since we don't have a direct status field in the database,
+      // we'll update the local state for now
+      // In a real implementation, you might want to add a status field to profiles
+      setUsers(prev => prev.map(user => 
+        user.id === id ? { ...user, status } : user
+      ));
+      
+      // You could also update a custom field in the profiles table
+      // const { error } = await supabase
+      //   .from('profiles')
+      //   .update({ status })
+      //   .eq('id', id);
+      
+      // if (error) throw error;
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      throw error;
+    }
+  };
+
   return (
     <DataContext.Provider value={{
       packages,
       bookings,
       users,
+      adminUsers,
       userStats,
       paymentStats,
       loading,
@@ -413,7 +486,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       deletePackage,
       updateBookingStatus,
       deleteBooking,
-      refreshData
+      updateUserStatus,
+      refreshData,
+      refreshAdminUsers
     }}>
       {children}
     </DataContext.Provider>

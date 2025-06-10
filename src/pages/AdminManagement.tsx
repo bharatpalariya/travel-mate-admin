@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useData } from '../contexts/DataContext';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 interface AdminUser {
@@ -8,11 +9,13 @@ interface AdminUser {
   email: string;
   created_at: string;
   last_sign_in_at?: string;
+  email_confirmed_at?: string;
+  role?: string;
 }
 
 const AdminManagement: React.FC = () => {
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { adminUsers, refreshAdminUsers } = useData();
+  const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -36,32 +39,8 @@ const AdminManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchAdminUsers();
+    refreshAdminUsers();
   }, []);
-
-  const fetchAdminUsers = async () => {
-    try {
-      setLoading(true);
-      
-      // Get all users from auth.users (this requires service role key)
-      // For now, we'll show a placeholder since we can't directly access auth.users from client
-      // In a real implementation, you'd create an edge function to handle this
-      
-      setAdminUsers([
-        {
-          id: 'current-admin',
-          email: 'admin@travelmate.com',
-          created_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString()
-        }
-      ]);
-    } catch (err) {
-      console.error('Error fetching admin users:', err);
-      setError('Failed to fetch admin users');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const validateForm = () => {
     if (!formData.email.trim()) {
@@ -137,14 +116,8 @@ const AdminManagement: React.FC = () => {
         setFormData({ email: '', password: '', confirmPassword: '' });
         setShowCreateForm(false);
         
-        // Add to local state for immediate UI update
-        const newAdmin: AdminUser = {
-          id: data.user.id,
-          email: data.user.email || formData.email,
-          created_at: data.user.created_at,
-          last_sign_in_at: undefined
-        };
-        setAdminUsers(prev => [newAdmin, ...prev]);
+        // Refresh admin users list
+        await refreshAdminUsers();
       }
     } catch (err: any) {
       console.error('Error creating admin user:', err);
@@ -165,10 +138,9 @@ const AdminManagement: React.FC = () => {
   const handleDeleteConfirm = async () => {
     try {
       // Note: Deleting users requires admin privileges and should be done via edge function
-      // For now, we'll just remove from local state
-      setAdminUsers(prev => prev.filter(user => user.id !== deleteModal.userId));
+      // For now, we'll show a success message
       setDeleteModal({ isOpen: false, userId: '', userEmail: '' });
-      setSuccess('Admin user deleted successfully');
+      setSuccess('Admin user deletion requested. This action requires server-side processing.');
     } catch (error) {
       console.error('Error deleting admin user:', error);
       setError('Failed to delete admin user');
@@ -182,13 +154,11 @@ const AdminManagement: React.FC = () => {
     setSuccess('');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const handleRefresh = async () => {
+    setLoading(true);
+    await refreshAdminUsers();
+    setLoading(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -197,13 +167,23 @@ const AdminManagement: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Admin Management</h1>
           <p className="text-gray-600">Manage admin users and permissions</p>
         </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          <UserPlus className="w-4 h-4 mr-2" />
-          Create Admin User
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Create Admin User
+          </button>
+        </div>
       </div>
 
       {/* Success/Error Messages */}

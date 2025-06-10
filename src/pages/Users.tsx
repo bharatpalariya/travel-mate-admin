@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Users, Mail, User, Calendar, Search, Filter, Eye } from 'lucide-react';
+import { Users, Mail, User, Calendar, Search, Filter, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 
 const UsersPage: React.FC = () => {
-  const { users, loading } = useData();
+  const { users, loading, updateUserStatus } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -28,6 +28,15 @@ const UsersPage: React.FC = () => {
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const handleStatusToggle = async (userId: string, currentStatus: 'active' | 'inactive') => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      await updateUserStatus(userId, newStatus);
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
 
   if (loading) {
@@ -224,9 +233,26 @@ const UsersPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
+                          {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                        </span>
+                        <button
+                          onClick={() => handleStatusToggle(user.id, user.status)}
+                          className={`transition-colors ${
+                            user.status === 'active' 
+                              ? 'text-green-600 hover:text-green-700' 
+                              : 'text-gray-400 hover:text-gray-600'
+                          }`}
+                          title={`Toggle to ${user.status === 'active' ? 'inactive' : 'active'}`}
+                        >
+                          {user.status === 'active' ? (
+                            <ToggleRight className="w-5 h-5" />
+                          ) : (
+                            <ToggleLeft className="w-5 h-5" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
