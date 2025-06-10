@@ -43,11 +43,14 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
+            <UserPlus className="w-8 h-8 text-white" />
+          </div>
           <h2 className="text-3xl font-bold text-gray-900">TravelMate Admin</h2>
           <p className="mt-2 text-sm text-gray-600">Sign in to your admin account</p>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-md">
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start space-x-2">
               <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
@@ -70,7 +73,7 @@ const Login: React.FC = () => {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="Enter your admin email"
                 />
               </div>
@@ -90,7 +93,7 @@ const Login: React.FC = () => {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="••••••••"
                 />
                 <button
@@ -110,39 +113,37 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              {isSubmitting ? 'Signing in...' : 'Sign In'}
+              {isSubmitting ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Signing in...
+                </div>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 
-          <div className="mt-6 space-y-3">
-            <div className="text-center">
-              <Link
-                to="/admin-setup"
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
-              >
-                <UserPlus className="h-4 w-4 mr-1" />
-                Need to create an admin account?
-              </Link>
-            </div>
+          <div className="mt-6 text-center">
+            <Link
+              to="/admin-setup"
+              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 font-medium"
+            >
+              <UserPlus className="h-4 w-4 mr-1" />
+              Need to create an admin account?
+            </Link>
+          </div>
 
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <h4 className="text-sm font-medium text-blue-800 mb-1">Default Admin Credentials</h4>
-              <div className="text-xs text-blue-700 space-y-1">
-                <div><strong>Email:</strong> admin@travelmate.com</div>
-                <div><strong>Password:</strong> TravelAdmin2025!</div>
-              </div>
-            </div>
-            
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-              <h4 className="text-sm font-medium text-amber-800 mb-1">Having trouble signing in?</h4>
-              <ul className="text-xs text-amber-700 space-y-1">
-                <li>• Verify your email and password are correct</li>
-                <li>• Check if your admin account exists in Supabase</li>
-                <li>• Try creating a new admin account if needed</li>
-              </ul>
-            </div>
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">Having trouble signing in?</h4>
+            <ul className="text-xs text-blue-700 space-y-1">
+              <li>• Verify your email and password are correct</li>
+              <li>• Check if your admin account exists in the system</li>
+              <li>• Try creating a new admin account if needed</li>
+              <li>• Contact support if issues persist</li>
+            </ul>
           </div>
         </div>
       </div>
