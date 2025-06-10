@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Package, Booking, ItineraryDay } from '../types';
+import { Package, Booking, ItineraryDay, UserStats, PaymentStats } from '../types';
 
 interface DataContextType {
   packages: Package[];
   bookings: Booking[];
+  userStats: UserStats;
+  paymentStats: PaymentStats;
   loading: boolean;
   addPackage: (pkg: Omit<Package, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updatePackage: (id: string, pkg: Partial<Package>) => Promise<void>;
@@ -27,6 +29,18 @@ export const useData = () => {
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [packages, setPackages] = useState<Package[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>({
+    totalUsers: 0,
+    activeUsers: 0,
+    newUsersThisMonth: 0
+  });
+  const [paymentStats, setPaymentStats] = useState<PaymentStats>({
+    totalRevenue: 0,
+    totalOrders: 0,
+    completedOrders: 0,
+    pendingOrders: 0,
+    averageOrderValue: 0
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchPackages = async () => {
@@ -76,9 +90,113 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const fetchUserStats = async () => {
+    try {
+      // Get total users count
+      const { count: totalUsers, error: usersError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (usersError) {
+        console.error('Error fetching user count:', usersError);
+        return;
+      }
+
+      // Get users created this month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { count: newUsersThisMonth, error: newUsersError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startOfMonth.toISOString());
+
+      if (newUsersError) {
+        console.error('Error fetching new users count:', newUsersError);
+        return;
+      }
+
+      // Get active users (users with bookings in the last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data: activeUsersData, error: activeUsersError } = await supabase
+        .from('bookings')
+        .select('user_id')
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      if (activeUsersError) {
+        console.error('Error fetching active users:', activeUsersError);
+        return;
+      }
+
+      const uniqueActiveUsers = new Set(activeUsersData?.map(booking => booking.user_id) || []);
+
+      setUserStats({
+        totalUsers: totalUsers || 0,
+        activeUsers: uniqueActiveUsers.size,
+        newUsersThisMonth: newUsersThisMonth || 0
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  };
+
+  const fetchPaymentStats = async () => {
+    try {
+      // Get all orders
+      const { data: orders, error: ordersError } = await supabase
+        .from('stripe_orders')
+        .select('*');
+
+      if (ordersError) {
+        console.error('Error fetching orders:', ordersError);
+        return;
+      }
+
+      if (!orders || orders.length === 0) {
+        setPaymentStats({
+          totalRevenue: 0,
+          totalOrders: 0,
+          completedOrders: 0,
+          pendingOrders: 0,
+          averageOrderValue: 0
+        });
+        return;
+      }
+
+      const totalOrders = orders.length;
+      const completedOrders = orders.filter(order => order.status === 'completed').length;
+      const pendingOrders = orders.filter(order => order.status === 'pending').length;
+      
+      // Calculate total revenue from completed orders (amount is in cents)
+      const totalRevenue = orders
+        .filter(order => order.status === 'completed')
+        .reduce((sum, order) => sum + (order.amount_total || 0), 0) / 100; // Convert from cents to rupees
+
+      const averageOrderValue = completedOrders > 0 ? totalRevenue / completedOrders : 0;
+
+      setPaymentStats({
+        totalRevenue,
+        totalOrders,
+        completedOrders,
+        pendingOrders,
+        averageOrderValue
+      });
+    } catch (error) {
+      console.error('Error fetching payment stats:', error);
+    }
+  };
+
   const refreshData = async () => {
     setLoading(true);
-    await Promise.all([fetchPackages(), fetchBookings()]);
+    await Promise.all([
+      fetchPackages(), 
+      fetchBookings(), 
+      fetchUserStats(), 
+      fetchPaymentStats()
+    ]);
     setLoading(false);
   };
 
@@ -216,6 +334,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <DataContext.Provider value={{
       packages,
       bookings,
+      userStats,
+      paymentStats,
       loading,
       addPackage,
       updatePackage,
