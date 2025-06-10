@@ -36,7 +36,7 @@ function App() {
               <Route path="admin-management" element={<AdminManagement />} />
               <Route path="users" element={<Users />} />
             </Route>
-            <Route path="/" element={<Navigate to="/admin" replace />} />
+            <Route path="/" element={<Navigate to="/admin\" replace />} />
           </Routes>
         </Router>
       </DataProvider>
