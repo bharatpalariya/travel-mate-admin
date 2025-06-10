@@ -3,63 +3,9 @@ import { Users, Mail, User, Calendar, Search, Filter, Eye } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 
 const UsersPage: React.FC = () => {
-  const { loading } = useData();
+  const { users, loading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
-  // Mock user data - in real implementation, this would come from your data context
-  const [users] = useState([
-    {
-      id: '1',
-      full_name: 'John Doe',
-      email: 'john.doe@example.com',
-      avatar_url: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-      created_at: '2024-01-15T10:30:00Z',
-      last_booking: '2024-12-01T14:20:00Z',
-      total_bookings: 3,
-      status: 'active'
-    },
-    {
-      id: '2',
-      full_name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      avatar_url: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
-      created_at: '2024-02-20T09:15:00Z',
-      last_booking: '2024-11-15T16:45:00Z',
-      total_bookings: 1,
-      status: 'active'
-    },
-    {
-      id: '3',
-      full_name: 'Mike Johnson',
-      email: 'mike.johnson@example.com',
-      avatar_url: null,
-      created_at: '2024-03-10T11:00:00Z',
-      last_booking: null,
-      total_bookings: 0,
-      status: 'inactive'
-    },
-    {
-      id: '4',
-      full_name: 'Sarah Wilson',
-      email: 'sarah.wilson@example.com',
-      avatar_url: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150',
-      created_at: '2024-01-05T08:45:00Z',
-      last_booking: '2024-12-05T12:30:00Z',
-      total_bookings: 5,
-      status: 'active'
-    },
-    {
-      id: '5',
-      full_name: 'David Brown',
-      email: 'david.brown@example.com',
-      avatar_url: null,
-      created_at: '2024-04-12T13:20:00Z',
-      last_booking: '2024-10-20T10:15:00Z',
-      total_bookings: 2,
-      status: 'active'
-    }
-  ]);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -248,7 +194,7 @@ const UsersPage: React.FC = () => {
                             {user.full_name || 'No name provided'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            ID: {user.id}
+                            ID: {user.id.substring(0, 8)}...
                           </div>
                         </div>
                       </div>

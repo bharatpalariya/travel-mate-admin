@@ -42,44 +42,50 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm font-medium">Total Users</p>
-                <p className="text-3xl font-bold mt-1">{userStats.totalUsers.toLocaleString()}</p>
-                <p className="text-blue-100 text-xs mt-1">Registered customers</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
+          <Link to="/admin/users" className="block">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Total Users</p>
+                  <p className="text-3xl font-bold mt-1">{userStats.totalUsers.toLocaleString()}</p>
+                  <p className="text-blue-100 text-xs mt-1">Registered customers</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm font-medium">Active Users</p>
-                <p className="text-3xl font-bold mt-1">{userStats.activeUsers.toLocaleString()}</p>
-                <p className="text-green-100 text-xs mt-1">Users with bookings (30 days)</p>
-              </div>
-              <div className="w-12 h-12 bg-green-400 rounded-lg flex items-center justify-center">
-                <Activity className="w-6 h-6 text-white" />
+          <Link to="/admin/users" className="block">
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm font-medium">Active Users</p>
+                  <p className="text-3xl font-bold mt-1">{userStats.activeUsers.toLocaleString()}</p>
+                  <p className="text-green-100 text-xs mt-1">Users with bookings (30 days)</p>
+                </div>
+                <div className="w-12 h-12 bg-green-400 rounded-lg flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-yellow-100 text-sm font-medium">New Users This Month</p>
-                <p className="text-3xl font-bold mt-1">{userStats.newUsersThisMonth.toLocaleString()}</p>
-                <p className="text-yellow-100 text-xs mt-1">Monthly growth</p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
-                <UserPlus className="w-6 h-6 text-white" />
+          <Link to="/admin/users" className="block">
+            <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-yellow-100 text-sm font-medium">New Users This Month</p>
+                  <p className="text-3xl font-bold mt-1">{userStats.newUsersThisMonth.toLocaleString()}</p>
+                  <p className="text-yellow-100 text-xs mt-1">Monthly growth</p>
+                </div>
+                <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
+                  <UserPlus className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* User Engagement Metrics */}
