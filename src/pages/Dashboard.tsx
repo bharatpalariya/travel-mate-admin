@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Users, Calendar, TrendingUp, DollarSign, UserCheck, CreditCard, ShoppingCart, UserPlus, Activity } from 'lucide-react';
+import { Package, Users, Calendar, TrendingUp, DollarSign, UserCheck, CreditCard, ShoppingCart, UserPlus, Activity, RefreshCw } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import StatCard from '../components/UI/StatCard';
 
 const Dashboard: React.FC = () => {
-  const { packages, bookings, userStats, paymentStats, loading } = useData();
+  const { packages, bookings, userStats, paymentStats, loading, refreshData } = useData();
+
+  // Add a manual refresh function for the dashboard
+  const handleRefresh = async () => {
+    await refreshData();
+  };
 
   if (loading) {
     return (
@@ -24,9 +29,19 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome to your TravelMate admin dashboard</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2">Welcome to your TravelMate admin dashboard</p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </button>
       </div>
 
       {/* User Statistics */}

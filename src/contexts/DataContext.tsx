@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Package, Booking, ItineraryDay, UserStats, PaymentStats } from '../types';
+import { useAuth } from './AuthContext';
 
 interface User {
   id: string;
@@ -51,6 +52,7 @@ export const useData = () => {
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { admin } = useAuth(); // Get auth state
   const [packages, setPackages] = useState<Package[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -305,24 +307,60 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshData = async () => {
     setLoading(true);
-    await Promise.all([
-      fetchPackages(), 
-      fetchBookings(), 
-      fetchUsers(),
-      fetchUserStats(), 
-      fetchPaymentStats()
-    ]);
-    setLoading(false);
+    try {
+      await Promise.all([
+        fetchPackages(), 
+        fetchBookings(), 
+        fetchUsers(),
+        fetchUserStats(), 
+        fetchPaymentStats()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const refreshAdminUsers = async () => {
     await fetchAdminUsers();
   };
 
+  // Effect to refresh data when admin logs in
   useEffect(() => {
-    refreshData();
-    fetchAdminUsers();
-  }, []);
+    if (admin) {
+      // Admin is logged in, refresh all data
+      refreshData();
+      fetchAdminUsers();
+    } else {
+      // Admin is logged out, reset data
+      setPackages([]);
+      setBookings([]);
+      setUsers([]);
+      setAdminUsers([]);
+      setUserStats({
+        totalUsers: 0,
+        activeUsers: 0,
+        newUsersThisMonth: 0
+      });
+      setPaymentStats({
+        totalRevenue: 0,
+        totalOrders: 0,
+        completedOrders: 0,
+        pendingOrders: 0,
+        averageOrderValue: 0
+      });
+      setLoading(false);
+    }
+  }, [admin]); // Dependency on admin state
+
+  // Initial load effect
+  useEffect(() => {
+    if (admin) {
+      refreshData();
+      fetchAdminUsers();
+    }
+  }, []); // Only run once on mount
 
   const addPackage = async (pkg: Omit<Package, 'id' | 'created_at' | 'updated_at'>) => {
     try {
