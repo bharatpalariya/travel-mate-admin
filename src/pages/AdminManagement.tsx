@@ -225,6 +225,13 @@ const AdminManagement: React.FC = () => {
             </button>
           </div>
 
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">Admin Role Assignment</h4>
+            <p className="text-sm text-blue-700">
+              New users will be created with the "admin" role in their metadata. Only users with this role can access the admin portal.
+            </p>
+          </div>
+
           <form onSubmit={handleCreateAdmin} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -318,6 +325,9 @@ const AdminManagement: React.FC = () => {
               {adminUsers.length}
             </span>
           </div>
+          <p className="text-sm text-gray-600 mt-1">
+            Only users with "admin" role in their metadata are shown
+          </p>
         </div>
 
         <div className="overflow-x-auto">
@@ -326,6 +336,9 @@ const AdminManagement: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Admin User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
@@ -361,6 +374,12 @@ const AdminManagement: React.FC = () => {
                         <div className="text-sm text-gray-500">ID: {user.id.substring(0, 8)}...</div>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {user.role || 'admin'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
@@ -413,13 +432,14 @@ const AdminManagement: React.FC = () => {
 
       {/* Security Guidelines */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-amber-800 mb-2">Security Guidelines</h4>
+        <h4 className="text-sm font-medium text-amber-800 mb-2">Admin Role Security</h4>
         <ul className="text-sm text-amber-700 space-y-1">
+          <li>• Only users with "admin" role in metadata can access the admin portal</li>
+          <li>• Admin role is automatically assigned during user creation</li>
           <li>• Only create admin accounts for trusted personnel</li>
           <li>• Use strong passwords with mixed case, numbers, and special characters</li>
           <li>• Regularly review and remove unused admin accounts</li>
           <li>• Monitor admin activity and sign-in logs</li>
-          <li>• Consider implementing two-factor authentication for enhanced security</li>
         </ul>
       </div>
 
