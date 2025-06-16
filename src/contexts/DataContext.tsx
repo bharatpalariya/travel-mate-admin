@@ -176,33 +176,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchAdminUsers = async () => {
     try {
-      console.log('Fetching admin users...');
-      
-      // First check if we can call the function
+      // Use the RPC function to get admin users
       const { data, error } = await supabase.rpc('get_admin_users');
 
       if (error) {
         console.error('Error fetching admin users:', error);
-        
-        // Fallback: try to get current user info
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && admin) {
-          const fallbackAdminUsers: AdminUser[] = [
-            {
-              id: user.id,
-              email: user.email || admin.email,
-              created_at: user.created_at,
-              last_sign_in_at: user.last_sign_in_at || new Date().toISOString(),
-              email_confirmed_at: user.email_confirmed_at || user.created_at,
-              role: 'admin'
-            }
-          ];
-          setAdminUsers(fallbackAdminUsers);
-        }
+        // Fallback to mock data if RPC fails
+        const mockAdminUsers: AdminUser[] = [
+          {
+            id: admin?.id || 'current-admin',
+            email: admin?.email || 'admin@travelmate.com',
+            created_at: admin?.createdAt || new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            email_confirmed_at: admin?.createdAt || new Date().toISOString(),
+            role: 'admin'
+          }
+        ];
+        setAdminUsers(mockAdminUsers);
         return;
       }
-
-      console.log('Admin users data:', data);
 
       // Format the data from RPC
       const formattedAdminUsers = data?.map((user: any) => ({
@@ -217,7 +209,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAdminUsers(formattedAdminUsers);
     } catch (error) {
       console.error('Error fetching admin users:', error);
-      
       // Fallback to current admin user
       if (admin) {
         const fallbackAdminUsers: AdminUser[] = [
