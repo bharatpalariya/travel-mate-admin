@@ -176,47 +176,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchAdminUsers = async () => {
     try {
-      // Try to fetch admin users from auth.users via edge function
-      const { data, error } = await supabase.functions.invoke('get-admin-users');
+      // Since we can't directly access auth.users from the client,
+      // we'll use a workaround to get admin users
+      // In a real implementation, you'd create an edge function for this
       
-      if (error) {
-        console.error('Error fetching admin users via edge function:', error);
-        // Fallback to mock data
-        const mockAdminUsers: AdminUser[] = [
-          {
-            id: 'admin-1',
-            email: 'admin@travelmate.com',
-            created_at: '2024-01-01T00:00:00Z',
-            last_sign_in_at: new Date().toISOString(),
-            email_confirmed_at: '2024-01-01T00:00:00Z',
-            role: 'admin'
-          },
-          {
-            id: 'admin-2', 
-            email: 'amitjaju@gmail.com',
-            created_at: '2024-01-01T00:00:00Z',
-            last_sign_in_at: new Date().toISOString(),
-            email_confirmed_at: '2024-01-01T00:00:00Z',
-            role: 'admin'
-          }
-        ];
-        setAdminUsers(mockAdminUsers);
-      } else {
-        setAdminUsers(data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching admin users:', error);
-      // Show current admin user at minimum
-      setAdminUsers([
+      // For now, we'll create a mock list based on known admin emails
+      const mockAdminUsers: AdminUser[] = [
         {
-          id: 'current-admin',
+          id: 'admin-1',
           email: 'admin@travelmate.com',
-          created_at: new Date().toISOString(),
+          created_at: '2024-01-01T00:00:00Z',
           last_sign_in_at: new Date().toISOString(),
-          email_confirmed_at: new Date().toISOString(),
+          email_confirmed_at: '2024-01-01T00:00:00Z',
+          role: 'admin'
+        },
+        {
+          id: 'admin-2', 
+          email: 'amitjaju@gmail.com',
+          created_at: '2024-01-01T00:00:00Z',
+          last_sign_in_at: new Date().toISOString(),
+          email_confirmed_at: '2024-01-01T00:00:00Z',
           role: 'admin'
         }
-      ]);
+      ];
+
+      setAdminUsers(mockAdminUsers);
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
     }
   };
 

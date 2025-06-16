@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useData } from '../contexts/DataContext';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 interface AdminUser {
@@ -13,7 +14,7 @@ interface AdminUser {
 }
 
 const AdminManagement: React.FC = () => {
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const { adminUsers, refreshAdminUsers } = useData();
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -37,50 +38,8 @@ const AdminManagement: React.FC = () => {
     userEmail: ''
   });
 
-  const fetchAdminUsers = async () => {
-    setLoading(true);
-    try {
-      // Get all users from auth.users table using RPC function
-      const { data, error } = await supabase.rpc('get_admin_users');
-      
-      if (error) {
-        console.error('Error fetching admin users:', error);
-        // Fallback: get current session user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setAdminUsers([{
-            id: user.id,
-            email: user.email || '',
-            created_at: user.created_at,
-            last_sign_in_at: user.last_sign_in_at,
-            email_confirmed_at: user.email_confirmed_at,
-            role: 'admin'
-          }]);
-        }
-      } else {
-        setAdminUsers(data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching admin users:', error);
-      // Show current admin user at minimum
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setAdminUsers([{
-          id: user.id,
-          email: user.email || '',
-          created_at: user.created_at,
-          last_sign_in_at: user.last_sign_in_at,
-          email_confirmed_at: user.email_confirmed_at,
-          role: 'admin'
-        }]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAdminUsers();
+    refreshAdminUsers();
   }, []);
 
   const validateForm = () => {
@@ -157,22 +116,8 @@ const AdminManagement: React.FC = () => {
         setFormData({ email: '', password: '', confirmPassword: '' });
         setShowCreateForm(false);
         
-        // Add the new user to the list immediately
-        const newAdminUser: AdminUser = {
-          id: data.user.id,
-          email: data.user.email || '',
-          created_at: data.user.created_at,
-          last_sign_in_at: data.user.last_sign_in_at,
-          email_confirmed_at: data.user.email_confirmed_at,
-          role: 'admin'
-        };
-        
-        setAdminUsers(prev => [newAdminUser, ...prev]);
-        
-        // Also refresh the list to get any updates
-        setTimeout(() => {
-          fetchAdminUsers();
-        }, 1000);
+        // Refresh admin users list
+        await refreshAdminUsers();
       }
     } catch (err: any) {
       console.error('Error creating admin user:', err);
@@ -210,7 +155,9 @@ const AdminManagement: React.FC = () => {
   };
 
   const handleRefresh = async () => {
-    await fetchAdminUsers();
+    setLoading(true);
+    await refreshAdminUsers();
+    setLoading(false);
   };
 
   return (
@@ -433,18 +380,11 @@ const AdminManagement: React.FC = () => {
           </table>
         </div>
 
-        {adminUsers.length === 0 && !loading && (
+        {adminUsers.length === 0 && (
           <div className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No admin users found</p>
             <p className="text-sm text-gray-400 mt-1">Create your first admin user to get started</p>
-          </div>
-        )}
-
-        {loading && (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading admin users...</p>
           </div>
         )}
       </div>
