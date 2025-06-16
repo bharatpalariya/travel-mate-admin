@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw, Bug } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,10 +12,12 @@ interface AdminUser {
   last_sign_in_at?: string;
   email_confirmed_at?: string;
   role?: string;
+  user_metadata?: any;
+  app_metadata?: any;
 }
 
 const AdminManagement: React.FC = () => {
-  const { adminUsers, refreshAdminUsers } = useData();
+  const { adminUsers, refreshAdminUsers, debugAdminUsers } = useData();
   const { admin } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -118,8 +120,10 @@ const AdminManagement: React.FC = () => {
         setFormData({ email: '', password: '', confirmPassword: '' });
         setShowCreateForm(false);
         
-        // Refresh admin users list
-        await refreshAdminUsers();
+        // Refresh admin users list after a short delay to allow for database updates
+        setTimeout(async () => {
+          await refreshAdminUsers();
+        }, 2000);
       }
     } catch (err: any) {
       console.error('Error creating admin user:', err);
@@ -171,6 +175,18 @@ const AdminManagement: React.FC = () => {
     }
   };
 
+  const handleDebug = async () => {
+    setError('');
+    setSuccess('');
+    try {
+      await debugAdminUsers();
+      setSuccess('Debug information logged to console. Check browser console for details.');
+    } catch (error) {
+      console.error('Error running debug:', error);
+      setError('Failed to run debug');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -179,6 +195,13 @@ const AdminManagement: React.FC = () => {
           <p className="text-gray-600">Manage admin users and permissions</p>
         </div>
         <div className="flex space-x-3">
+          <button
+            onClick={handleDebug}
+            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+          >
+            <Bug className="w-4 h-4 mr-2" />
+            Debug
+          </button>
           <button
             onClick={handleRefresh}
             disabled={loading}
