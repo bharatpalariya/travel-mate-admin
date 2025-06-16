@@ -127,7 +127,7 @@ const Login: React.FC = () => {
           </form>
 
           <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-800 mb-2">Need Help?</h4>
+            <h4 className="text-sm font-medium text-gray-800 mb-2">Having trouble signing in?</h4>
             <ul className="text-xs text-gray-700 space-y-1">
               <li>• Verify your email and password are correct</li>
               <li>• Check if your admin account exists in the system</li>
