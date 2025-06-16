@@ -13,8 +13,6 @@ interface HelpRequest {
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   created_at: string;
   updated_at: string;
-  user_name?: string;
-  user_email?: string;
 }
 
 interface TicketStats {
@@ -59,10 +57,7 @@ const SupportTickets: React.FC = () => {
       setError('');
       const { data, error: fetchError } = await supabase
         .from('help_requests')
-        .select(`
-          *,
-          profiles!inner(full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -71,22 +66,16 @@ const SupportTickets: React.FC = () => {
         return;
       }
 
-      // Format tickets with user information
-      const formattedTickets = data?.map(ticket => ({
-        ...ticket,
-        user_name: ticket.profiles?.full_name || 'Unknown User',
-        user_email: `user${ticket.user_id.substring(0, 8)}@example.com` // Mock email
-      })) || [];
-
-      setTickets(formattedTickets);
+      setTickets(data || []);
 
       // Calculate stats
+      const ticketData = data || [];
       const newStats = {
-        total: formattedTickets.length,
-        open: formattedTickets.filter(t => t.status === 'open').length,
-        inProgress: formattedTickets.filter(t => t.status === 'in_progress').length,
-        resolved: formattedTickets.filter(t => t.status === 'resolved').length,
-        closed: formattedTickets.filter(t => t.status === 'closed').length
+        total: ticketData.length,
+        open: ticketData.filter(t => t.status === 'open').length,
+        inProgress: ticketData.filter(t => t.status === 'in_progress').length,
+        resolved: ticketData.filter(t => t.status === 'resolved').length,
+        closed: ticketData.filter(t => t.status === 'closed').length
       };
       setStats(newStats);
 
@@ -112,7 +101,7 @@ const SupportTickets: React.FC = () => {
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.user_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                         ticket.user_id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -231,6 +220,10 @@ const SupportTickets: React.FC = () => {
     return { level: 'Low', color: 'text-green-600' };
   };
 
+  const formatUserId = (userId: string) => {
+    return `User ${userId.substring(0, 8)}...`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -340,7 +333,7 @@ const SupportTickets: React.FC = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search tickets by subject, message, or user..."
+            placeholder="Search tickets by subject, message, or user ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -381,7 +374,7 @@ const SupportTickets: React.FC = () => {
                     Ticket
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
+                    User ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -422,10 +415,10 @@ const SupportTickets: React.FC = () => {
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {ticket.user_name}
+                              {formatUserId(ticket.user_id)}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              {ticket.user_email}
+                            <div className="text-sm text-gray-500 font-mono">
+                              {ticket.user_id.substring(0, 8)}
                             </div>
                           </div>
                         </div>
@@ -505,7 +498,7 @@ const SupportTickets: React.FC = () => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <span className="flex items-center">
                     <User className="w-4 h-4 mr-1" />
-                    {selectedTicket.user_name}
+                    {formatUserId(selectedTicket.user_id)}
                   </span>
                   <span className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
@@ -552,11 +545,11 @@ const SupportTickets: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-gray-900">Ticket ID:</span>
-                  <p className="text-gray-600 font-mono">{selectedTicket.id}</p>
+                  <p className="text-gray-600 font-mono break-all">{selectedTicket.id}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">User ID:</span>
-                  <p className="text-gray-600 font-mono">{selectedTicket.user_id}</p>
+                  <p className="text-gray-600 font-mono break-all">{selectedTicket.user_id}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">Created:</span>
