@@ -96,47 +96,34 @@ const AdminManagement: React.FC = () => {
     setIsCreating(true);
 
     try {
-      // Get the current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        setError('You must be logged in to create admin users');
-        return;
-      }
-
-      // Call the edge function to create admin user
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: 'Admin User',
+            role: 'admin'
+          }
+        }
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create admin user');
+      if (signUpError) {
+        if (signUpError.message.includes('already registered')) {
+          setError('An account with this email already exists');
+        } else {
+          throw signUpError;
+        }
+      } else if (data.user) {
+        setSuccess(`Admin user created successfully! User ID: ${data.user.id}`);
+        setFormData({ email: '', password: '', confirmPassword: '' });
+        setShowCreateForm(false);
+        
+        // Refresh admin users list
+        await refreshAdminUsers();
       }
-
-      setSuccess(`Admin user created successfully! User ID: ${result.user.id}`);
-      setFormData({ email: '', password: '', confirmPassword: '' });
-      setShowCreateForm(false);
-      
-      // Refresh admin users list
-      await refreshAdminUsers();
-
     } catch (err: any) {
       console.error('Error creating admin user:', err);
-      if (err.message.includes('already registered')) {
-        setError('An account with this email already exists');
-      } else {
-        setError(err.message || 'Failed to create admin user');
-      }
+      setError(err.message || 'Failed to create admin user');
     } finally {
       setIsCreating(false);
     }
