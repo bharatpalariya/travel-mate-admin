@@ -13,9 +13,6 @@ interface HelpRequest {
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   created_at: string;
   updated_at: string;
-  // Joined data from profiles
-  user_name?: string | null;
-  user_avatar?: string | null;
 }
 
 interface TicketStats {
@@ -60,10 +57,7 @@ const SupportTickets: React.FC = () => {
       setError('');
       const { data, error: fetchError } = await supabase
         .from('help_requests')
-        .select(`
-          *,
-          profiles(full_name, avatar_url)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -72,22 +66,16 @@ const SupportTickets: React.FC = () => {
         return;
       }
 
-      // Format the data to include user information
-      const formattedTickets = data?.map(ticket => ({
-        ...ticket,
-        user_name: ticket.profiles?.full_name || null,
-        user_avatar: ticket.profiles?.avatar_url || null
-      })) || [];
-
-      setTickets(formattedTickets);
+      setTickets(data || []);
 
       // Calculate stats
+      const ticketData = data || [];
       const newStats = {
-        total: formattedTickets.length,
-        open: formattedTickets.filter(t => t.status === 'open').length,
-        inProgress: formattedTickets.filter(t => t.status === 'in_progress').length,
-        resolved: formattedTickets.filter(t => t.status === 'resolved').length,
-        closed: formattedTickets.filter(t => t.status === 'closed').length
+        total: ticketData.length,
+        open: ticketData.filter(t => t.status === 'open').length,
+        inProgress: ticketData.filter(t => t.status === 'in_progress').length,
+        resolved: ticketData.filter(t => t.status === 'resolved').length,
+        closed: ticketData.filter(t => t.status === 'closed').length
       };
       setStats(newStats);
 
@@ -113,8 +101,7 @@ const SupportTickets: React.FC = () => {
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (ticket.user_name && ticket.user_name.toLowerCase().includes(searchTerm.toLowerCase()));
+                         ticket.user_id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -237,15 +224,6 @@ const SupportTickets: React.FC = () => {
     return `User ${userId.substring(0, 8)}...`;
   };
 
-  const getDisplayName = (ticket: HelpRequest) => {
-    return ticket.user_name || formatUserId(ticket.user_id);
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -355,7 +333,7 @@ const SupportTickets: React.FC = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search tickets by subject, message, user name, or user ID..."
+            placeholder="Search tickets by subject, message, or user ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -396,7 +374,7 @@ const SupportTickets: React.FC = () => {
                     Ticket
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
+                    User ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -432,25 +410,15 @@ const SupportTickets: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {ticket.user_avatar ? (
-                            <img
-                              className="h-8 w-8 rounded-full object-cover mr-3"
-                              src={ticket.user_avatar}
-                              alt={ticket.user_name || 'User'}
-                            />
-                          ) : (
-                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                              <span className="text-xs font-medium text-gray-600">
-                                {getInitials(ticket.user_name)}
-                              </span>
-                            </div>
-                          )}
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                            <User className="w-4 h-4 text-gray-600" />
+                          </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {getDisplayName(ticket)}
+                              {formatUserId(ticket.user_id)}
                             </div>
                             <div className="text-sm text-gray-500 font-mono">
-                              {ticket.user_id.substring(0, 8)}...
+                              {ticket.user_id.substring(0, 8)}
                             </div>
                           </div>
                         </div>
@@ -530,7 +498,7 @@ const SupportTickets: React.FC = () => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <span className="flex items-center">
                     <User className="w-4 h-4 mr-1" />
-                    {getDisplayName(selectedTicket)}
+                    {formatUserId(selectedTicket.user_id)}
                   </span>
                   <span className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
@@ -543,35 +511,6 @@ const SupportTickets: React.FC = () => {
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedTicket.status)}`}>
                   {selectedTicket.status.replace('_', ' ').toUpperCase()}
                 </span>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Customer Information</h4>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center space-x-3">
-                  {selectedTicket.user_avatar ? (
-                    <img
-                      className="h-10 w-10 rounded-full object-cover"
-                      src={selectedTicket.user_avatar}
-                      alt={selectedTicket.user_name || 'User'}
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600">
-                        {getInitials(selectedTicket.user_name)}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {getDisplayName(selectedTicket)}
-                    </p>
-                    <p className="text-sm text-gray-500 font-mono">
-                      User ID: {selectedTicket.user_id}
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
 
