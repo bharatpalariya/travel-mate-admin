@@ -126,22 +126,20 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <Link
-              to="/admin-setup"
-              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 font-medium"
-            >
-              <UserPlus className="h-4 w-4 mr-1" />
-              Need to create an admin account?
-            </Link>
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">Default Admin Credentials</h4>
+            <div className="text-xs text-blue-700 space-y-1">
+              <div><strong>Email:</strong> admin@travelmate.com</div>
+              <div><strong>Password:</strong> TravelAdmin2025!</div>
+            </div>
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-800 mb-2">Having trouble signing in?</h4>
-            <ul className="text-xs text-blue-700 space-y-1">
+          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h4 className="text-sm font-medium text-amber-800 mb-2">Having trouble signing in?</h4>
+            <ul className="text-xs text-amber-700 space-y-1">
               <li>• Verify your email and password are correct</li>
               <li>• Check if your admin account exists in the system</li>
-              <li>• Try creating a new admin account if needed</li>
+              <li>• Use the Admin Management section to create new admin accounts</li>
               <li>• Contact support if issues persist</li>
             </ul>
           </div>

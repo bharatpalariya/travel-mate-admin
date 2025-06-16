@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 interface AdminUser {
@@ -15,6 +16,7 @@ interface AdminUser {
 
 const AdminManagement: React.FC = () => {
   const { adminUsers, refreshAdminUsers } = useData();
+  const { admin } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -156,8 +158,17 @@ const AdminManagement: React.FC = () => {
 
   const handleRefresh = async () => {
     setLoading(true);
-    await refreshAdminUsers();
-    setLoading(false);
+    setError('');
+    setSuccess('');
+    try {
+      await refreshAdminUsers();
+      setSuccess('Admin users refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing admin users:', error);
+      setError('Failed to refresh admin users');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -339,7 +350,14 @@ const AdminManagement: React.FC = () => {
                         <Users className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.email}
+                          {user.id === admin?.id && (
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              Current
+                            </span>
+                          )}
+                        </div>
                         <div className="text-sm text-gray-500">ID: {user.id.substring(0, 8)}...</div>
                       </div>
                     </div>
@@ -366,13 +384,15 @@ const AdminManagement: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleDeleteClick(user)}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                      title="Delete Admin User"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {user.id !== admin?.id && (
+                      <button
+                        onClick={() => handleDeleteClick(user)}
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                        title="Delete Admin User"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -384,7 +404,9 @@ const AdminManagement: React.FC = () => {
           <div className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No admin users found</p>
-            <p className="text-sm text-gray-400 mt-1">Create your first admin user to get started</p>
+            <p className="text-sm text-gray-400 mt-1">
+              {loading ? 'Loading admin users...' : 'Create your first admin user to get started'}
+            </p>
           </div>
         )}
       </div>

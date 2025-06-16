@@ -176,33 +176,53 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchAdminUsers = async () => {
     try {
-      // Since we can't directly access auth.users from the client,
-      // we'll use a workaround to get admin users
-      // In a real implementation, you'd create an edge function for this
-      
-      // For now, we'll create a mock list based on known admin emails
-      const mockAdminUsers: AdminUser[] = [
-        {
-          id: 'admin-1',
-          email: 'admin@travelmate.com',
-          created_at: '2024-01-01T00:00:00Z',
-          last_sign_in_at: new Date().toISOString(),
-          email_confirmed_at: '2024-01-01T00:00:00Z',
-          role: 'admin'
-        },
-        {
-          id: 'admin-2', 
-          email: 'amitjaju@gmail.com',
-          created_at: '2024-01-01T00:00:00Z',
-          last_sign_in_at: new Date().toISOString(),
-          email_confirmed_at: '2024-01-01T00:00:00Z',
-          role: 'admin'
-        }
-      ];
+      // Use the RPC function to get admin users
+      const { data, error } = await supabase.rpc('get_admin_users');
 
-      setAdminUsers(mockAdminUsers);
+      if (error) {
+        console.error('Error fetching admin users:', error);
+        // Fallback to mock data if RPC fails
+        const mockAdminUsers: AdminUser[] = [
+          {
+            id: admin?.id || 'current-admin',
+            email: admin?.email || 'admin@travelmate.com',
+            created_at: admin?.createdAt || new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            email_confirmed_at: admin?.createdAt || new Date().toISOString(),
+            role: 'admin'
+          }
+        ];
+        setAdminUsers(mockAdminUsers);
+        return;
+      }
+
+      // Format the data from RPC
+      const formattedAdminUsers = data?.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        email_confirmed_at: user.email_confirmed_at,
+        role: user.role || 'admin'
+      })) || [];
+
+      setAdminUsers(formattedAdminUsers);
     } catch (error) {
       console.error('Error fetching admin users:', error);
+      // Fallback to current admin user
+      if (admin) {
+        const fallbackAdminUsers: AdminUser[] = [
+          {
+            id: admin.id,
+            email: admin.email,
+            created_at: admin.createdAt,
+            last_sign_in_at: new Date().toISOString(),
+            email_confirmed_at: admin.createdAt,
+            role: 'admin'
+          }
+        ];
+        setAdminUsers(fallbackAdminUsers);
+      }
     }
   };
 
