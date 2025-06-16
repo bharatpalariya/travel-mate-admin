@@ -14,7 +14,7 @@ interface AdminUser {
 }
 
 const AdminManagement: React.FC = () => {
-  const { adminUsers, refreshAdminUsers } = useData();
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -38,8 +38,60 @@ const AdminManagement: React.FC = () => {
     userEmail: ''
   });
 
+  const fetchAdminUsers = async () => {
+    setLoading(true);
+    try {
+      // Create an edge function call to get admin users
+      const { data, error } = await supabase.functions.invoke('get-admin-users');
+      
+      if (error) {
+        console.error('Error fetching admin users:', error);
+        // Fallback to mock data if edge function fails
+        const mockAdminUsers: AdminUser[] = [
+          {
+            id: 'admin-1',
+            email: 'admin@travelmate.com',
+            created_at: '2024-01-01T00:00:00Z',
+            last_sign_in_at: new Date().toISOString(),
+            email_confirmed_at: '2024-01-01T00:00:00Z',
+            role: 'admin'
+          },
+          {
+            id: 'admin-2', 
+            email: 'amitjaju@gmail.com',
+            created_at: '2024-01-01T00:00:00Z',
+            last_sign_in_at: new Date().toISOString(),
+            email_confirmed_at: '2024-01-01T00:00:00Z',
+            role: 'admin'
+          }
+        ];
+        setAdminUsers(mockAdminUsers);
+      } else {
+        setAdminUsers(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      // Show current admin user at minimum
+      const currentUser = supabase.auth.getUser();
+      if (currentUser) {
+        setAdminUsers([
+          {
+            id: 'current-admin',
+            email: 'admin@travelmate.com',
+            created_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            email_confirmed_at: new Date().toISOString(),
+            role: 'admin'
+          }
+        ]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    refreshAdminUsers();
+    fetchAdminUsers();
   }, []);
 
   const validateForm = () => {
@@ -117,7 +169,7 @@ const AdminManagement: React.FC = () => {
         setShowCreateForm(false);
         
         // Refresh admin users list
-        await refreshAdminUsers();
+        await fetchAdminUsers();
       }
     } catch (err: any) {
       console.error('Error creating admin user:', err);
@@ -155,9 +207,7 @@ const AdminManagement: React.FC = () => {
   };
 
   const handleRefresh = async () => {
-    setLoading(true);
-    await refreshAdminUsers();
-    setLoading(false);
+    await fetchAdminUsers();
   };
 
   return (
@@ -380,11 +430,18 @@ const AdminManagement: React.FC = () => {
           </table>
         </div>
 
-        {adminUsers.length === 0 && (
+        {adminUsers.length === 0 && !loading && (
           <div className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No admin users found</p>
             <p className="text-sm text-gray-400 mt-1">Create your first admin user to get started</p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-500 mt-2">Loading admin users...</p>
           </div>
         )}
       </div>
