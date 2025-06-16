@@ -98,14 +98,13 @@ const AdminManagement: React.FC = () => {
     setIsCreating(true);
 
     try {
-      // Create admin user with proper role metadata
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             full_name: 'Admin User',
-            role: 'admin' // This is crucial - sets the admin role
+            role: 'admin'
           }
         }
       });
@@ -252,7 +251,7 @@ const AdminManagement: React.FC = () => {
           <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <h4 className="text-sm font-medium text-blue-800 mb-2">Admin Role Assignment</h4>
             <p className="text-sm text-blue-700">
-              New users will be created with the "admin" role in their user metadata. Only users with this role can access the admin portal.
+              New users will be created with the "admin" role in their metadata. Only users with this role can access the admin portal.
             </p>
           </div>
 
