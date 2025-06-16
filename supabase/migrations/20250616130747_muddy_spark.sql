@@ -102,7 +102,7 @@ BEGIN
     -- Users with explicit admin role in app metadata
     OR (au.raw_app_meta_data ? 'role' AND au.raw_app_meta_data->>'role' = 'admin')
     -- Specific admin emails for backward compatibility
-    OR au.email IN ('admin@travelmate.com', 'amitjaju@gmail.com', 'bharat@travelmate.com')
+    --OR au.email IN ('admin@travelmate.com', 'amitjaju@gmail.com', 'bharat@travelmate.com')
   ORDER BY au.created_at DESC;
 END;
 $$;
@@ -143,7 +143,7 @@ BEGIN
     (
       (au.raw_user_meta_data ? 'role' AND au.raw_user_meta_data->>'role' = 'admin')
       OR (au.raw_app_meta_data ? 'role' AND au.raw_app_meta_data->>'role' = 'admin')
-      OR au.email IN ('admin@travelmate.com', 'amitjaju@gmail.com', 'bharat@travelmate.com')
+      --OR au.email IN ('admin@travelmate.com', 'amitjaju@gmail.com', 'bharat@travelmate.com')
     ) as is_admin_result
   FROM auth.users au
   ORDER BY au.created_at DESC;
