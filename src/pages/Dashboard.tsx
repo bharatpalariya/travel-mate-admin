@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Users, Calendar, TrendingUp, DollarSign, UserCheck, CreditCard, ShoppingCart, UserPlus, Activity, RefreshCw } from 'lucide-react';
+import { Package, Users, Calendar, TrendingUp, DollarSign, UserCheck, CreditCard, ShoppingCart, UserPlus, Activity, RefreshCw, MessageSquare, AlertCircle } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import StatCard from '../components/UI/StatCard';
 
@@ -288,7 +288,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Package Management</h3>
           <p className="text-gray-600 mb-6">Create, edit, and manage travel packages for your customers</p>
@@ -310,6 +310,18 @@ const Dashboard: React.FC = () => {
           >
             <Users className="w-5 h-5 mr-2" />
             Manage Bookings
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Support Tickets</h3>
+          <p className="text-gray-600 mb-6">Handle customer support requests and help tickets</p>
+          <Link
+            to="/admin/support-tickets"
+            className="inline-flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+          >
+            <MessageSquare className="w-5 h-5 mr-2" />
+            Manage Tickets
           </Link>
         </div>
       </div>
