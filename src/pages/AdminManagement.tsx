@@ -40,7 +40,7 @@ const AdminManagement: React.FC = () => {
   const fetchAdminUsers = async () => {
     setLoading(true);
     try {
-      // Get all users from auth.users table using RPC function
+      // Try to get admin users using RPC function
       const { data, error } = await supabase.rpc('get_admin_users');
       
       if (error) {
@@ -210,6 +210,8 @@ const AdminManagement: React.FC = () => {
   };
 
   const handleRefresh = async () => {
+    setError('');
+    setSuccess('');
     await fetchAdminUsers();
   };
 
