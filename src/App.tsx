@@ -13,6 +13,7 @@ import PackageDetail from './pages/Packages/PackageDetail';
 import Bookings from './pages/Bookings';
 import AdminManagement from './pages/AdminManagement';
 import Users from './pages/Users';
+import SupportTickets from './pages/SupportTickets';
 
 function App() {
   return (
@@ -33,10 +34,11 @@ function App() {
               <Route path="packages/:id" element={<PackageDetail />} />
               <Route path="packages/:id/edit" element={<PackageForm />} />
               <Route path="bookings" element={<Bookings />} />
-              <Route path="admin-management" element={<AdminManagement />} />
               <Route path="users" element={<Users />} />
+              <Route path="support-tickets" element={<SupportTickets />} />
+              <Route path="admin-management" element={<AdminManagement />} />
             </Route>
-            <Route path="/" element={<Navigate to="/admin\" replace />} />
+            <Route path="/" element={<Navigate to="/admin" replace />} />
           </Routes>
         </Router>
       </DataProvider>

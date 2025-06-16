@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UserPlus, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
+import { UserPlus, CheckCircle, AlertCircle, ArrowRight, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const AdminSetup: React.FC = () => {
@@ -19,13 +19,14 @@ const AdminSetup: React.FC = () => {
     setSuccess(false);
 
     try {
-      // Create admin user using Supabase Auth
+      // Create admin user using Supabase Auth with admin role
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: 'admin@travelmate.com',
         password: 'TravelAdmin2025!',
         options: {
           data: {
-            full_name: 'Travel Admin'
+            full_name: 'Travel Admin',
+            role: 'admin'
           }
         }
       });
@@ -69,11 +70,24 @@ const AdminSetup: React.FC = () => {
           {!success && !adminCredentials && (
             <>
               <div className="text-center">
-                <UserPlus className="mx-auto h-12 w-12 text-blue-600" />
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-blue-600" />
+                </div>
                 <h3 className="mt-4 text-lg font-medium text-gray-900">Create Admin Account</h3>
                 <p className="mt-2 text-sm text-gray-600">
-                  This will create an admin account that you can use to access the TravelMate admin portal.
+                  This will create an admin account with the "admin" role that you can use to access the TravelMate admin portal.
                 </p>
+              </div>
+
+              {/* Admin Role Information */}
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">Admin Role Features</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Full access to admin portal</li>
+                  <li>• User with "admin" role in metadata</li>
+                  <li>• Manage packages, bookings, and users</li>
+                  <li>• Create additional admin users</li>
+                </ul>
               </div>
 
               {error && (
@@ -101,7 +115,7 @@ const AdminSetup: React.FC = () => {
                   {success ? 'Admin Account Created!' : 'Admin Account Ready'}
                 </h3>
                 <p className="mt-2 text-sm text-gray-600">
-                  Your admin account is ready. Use these credentials to log in.
+                  Your admin account with "admin" role is ready. Use these credentials to log in.
                 </p>
               </div>
 
@@ -118,6 +132,15 @@ const AdminSetup: React.FC = () => {
                     <code className="text-sm text-gray-900">{adminCredentials?.password}</code>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Role</label>
+                  <div className="mt-1 p-2 bg-white border border-gray-300 rounded-md">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      <Shield className="w-3 h-3 mr-1" />
+                      admin
+                    </span>
+                  </div>
+                </div>
                 {adminCredentials?.userId !== 'existing' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">User ID</label>
@@ -130,7 +153,7 @@ const AdminSetup: React.FC = () => {
 
               <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
                 <p className="text-sm text-amber-800">
-                  <strong>Important:</strong> Save these credentials securely. You'll need them to access the admin portal.
+                  <strong>Important:</strong> Save these credentials securely. The admin role grants full access to the portal.
                 </p>
               </div>
 

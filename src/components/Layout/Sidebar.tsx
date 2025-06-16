@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Package, Users, BarChart3, LogOut, Shield, UserCheck } from 'lucide-react';
+import { Package, Users, BarChart3, LogOut, Shield, UserCheck, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar: React.FC = () => {
@@ -11,6 +11,7 @@ const Sidebar: React.FC = () => {
     { to: '/admin/packages', icon: Package, label: 'Packages' },
     { to: '/admin/bookings', icon: Users, label: 'Bookings' },
     { to: '/admin/users', icon: UserCheck, label: 'Users' },
+    { to: '/admin/support-tickets', icon: MessageSquare, label: 'Support Tickets' },
     { to: '/admin/admin-management', icon: Shield, label: 'Admin Users' }
   ];
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw, Bug } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 interface AdminUser {
@@ -11,10 +12,13 @@ interface AdminUser {
   last_sign_in_at?: string;
   email_confirmed_at?: string;
   role?: string;
+  user_metadata?: any;
+  app_metadata?: any;
 }
 
 const AdminManagement: React.FC = () => {
-  const { adminUsers, refreshAdminUsers } = useData();
+  const { adminUsers, refreshAdminUsers, debugAdminUsers } = useData();
+  const { admin } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -116,8 +120,10 @@ const AdminManagement: React.FC = () => {
         setFormData({ email: '', password: '', confirmPassword: '' });
         setShowCreateForm(false);
         
-        // Refresh admin users list
-        await refreshAdminUsers();
+        // Refresh admin users list after a short delay to allow for database updates
+        setTimeout(async () => {
+          await refreshAdminUsers();
+        }, 2000);
       }
     } catch (err: any) {
       console.error('Error creating admin user:', err);
@@ -156,8 +162,29 @@ const AdminManagement: React.FC = () => {
 
   const handleRefresh = async () => {
     setLoading(true);
-    await refreshAdminUsers();
-    setLoading(false);
+    setError('');
+    setSuccess('');
+    try {
+      await refreshAdminUsers();
+      setSuccess('Admin users refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing admin users:', error);
+      setError('Failed to refresh admin users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDebug = async () => {
+    setError('');
+    setSuccess('');
+    try {
+      await debugAdminUsers();
+      setSuccess('Debug information logged to console. Check browser console for details.');
+    } catch (error) {
+      console.error('Error running debug:', error);
+      setError('Failed to run debug');
+    }
   };
 
   return (
@@ -168,6 +195,13 @@ const AdminManagement: React.FC = () => {
           <p className="text-gray-600">Manage admin users and permissions</p>
         </div>
         <div className="flex space-x-3">
+          <button
+            onClick={handleDebug}
+            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+          >
+            <Bug className="w-4 h-4 mr-2" />
+            Debug
+          </button>
           <button
             onClick={handleRefresh}
             disabled={loading}
@@ -212,6 +246,13 @@ const AdminManagement: React.FC = () => {
             >
               ×
             </button>
+          </div>
+
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">Admin Role Assignment</h4>
+            <p className="text-sm text-blue-700">
+              New users will be created with the "admin" role in their metadata. Only users with this role can access the admin portal.
+            </p>
           </div>
 
           <form onSubmit={handleCreateAdmin} className="space-y-4">
@@ -307,6 +348,9 @@ const AdminManagement: React.FC = () => {
               {adminUsers.length}
             </span>
           </div>
+          <p className="text-sm text-gray-600 mt-1">
+            Only users with "admin" role in their metadata are shown
+          </p>
         </div>
 
         <div className="overflow-x-auto">
@@ -315,6 +359,9 @@ const AdminManagement: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Admin User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
@@ -339,10 +386,23 @@ const AdminManagement: React.FC = () => {
                         <Users className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.email}
+                          {user.id === admin?.id && (
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              Current
+                            </span>
+                          )}
+                        </div>
                         <div className="text-sm text-gray-500">ID: {user.id.substring(0, 8)}...</div>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {user.role || 'admin'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
@@ -366,13 +426,15 @@ const AdminManagement: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleDeleteClick(user)}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                      title="Delete Admin User"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {user.id !== admin?.id && (
+                      <button
+                        onClick={() => handleDeleteClick(user)}
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                        title="Delete Admin User"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -384,20 +446,23 @@ const AdminManagement: React.FC = () => {
           <div className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No admin users found</p>
-            <p className="text-sm text-gray-400 mt-1">Create your first admin user to get started</p>
+            <p className="text-sm text-gray-400 mt-1">
+              {loading ? 'Loading admin users...' : 'Create your first admin user to get started'}
+            </p>
           </div>
         )}
       </div>
 
       {/* Security Guidelines */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-amber-800 mb-2">Security Guidelines</h4>
+        <h4 className="text-sm font-medium text-amber-800 mb-2">Admin Role Security</h4>
         <ul className="text-sm text-amber-700 space-y-1">
+          <li>• Only users with "admin" role in metadata can access the admin portal</li>
+          <li>• Admin role is automatically assigned during user creation</li>
           <li>• Only create admin accounts for trusted personnel</li>
           <li>• Use strong passwords with mixed case, numbers, and special characters</li>
           <li>• Regularly review and remove unused admin accounts</li>
           <li>• Monitor admin activity and sign-in logs</li>
-          <li>• Consider implementing two-factor authentication for enhanced security</li>
         </ul>
       </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
@@ -30,7 +30,7 @@ const Login: React.FC = () => {
     try {
       const success = await login(formData.email, formData.password);
       if (!success) {
-        setError('Invalid email or password. Please check your credentials and try again.');
+        setError('Invalid credentials or insufficient permissions. Only admin users can access this portal.');
       }
     } catch (err) {
       setError('An error occurred during login. Please try again.');
@@ -44,10 +44,10 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
-            <UserPlus className="w-8 h-8 text-white" />
+            <Shield className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">TravelMate Admin</h2>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your admin account</p>
+          <p className="mt-2 text-sm text-gray-600">Admin Portal Access</p>
         </div>
 
         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
@@ -57,6 +57,19 @@ const Login: React.FC = () => {
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
+
+          {/* Admin Access Notice */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="flex items-start space-x-2">
+              <Shield className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-medium text-blue-800">Admin Access Required</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  Only users with admin role can access this portal. Contact your system administrator if you need access.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -121,30 +134,10 @@ const Login: React.FC = () => {
                   Signing in...
                 </div>
               ) : (
-                'Sign In'
+                'Sign In to Admin Portal'
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              to="/admin-setup"
-              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 font-medium"
-            >
-              <UserPlus className="h-4 w-4 mr-1" />
-              Need to create an admin account?
-            </Link>
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-800 mb-2">Having trouble signing in?</h4>
-            <ul className="text-xs text-blue-700 space-y-1">
-              <li>• Verify your email and password are correct</li>
-              <li>• Check if your admin account exists in the system</li>
-              <li>• Try creating a new admin account if needed</li>
-              <li>• Contact support if issues persist</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
