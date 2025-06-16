@@ -138,15 +138,6 @@ const Login: React.FC = () => {
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              to="/admin-setup"
-              className="text-sm text-blue-600 hover:text-blue-500"
-            >
-              Need to set up admin access?
-            </Link>
-          </div>
         </div>
       </div>
     </div>
