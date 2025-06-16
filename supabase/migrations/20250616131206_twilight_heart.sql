@@ -104,7 +104,7 @@ BEGIN
     -- Also include users with admin role in app metadata
     OR (au.raw_app_meta_data ? 'role' AND au.raw_app_meta_data->>'role' = 'admin')
     -- Include specific admin emails for backward compatibility
-    OR au.email IN ('admin@travelmate.com', 'amitjaju@gmail.com', 'bharat@travelmate.com')
+    --OR au.email IN ('admin@travelmate.com', 'amitjaju@gmail.com', 'bharat@travelmate.com')
   ORDER BY au.created_at DESC;
 END;
 $$;
