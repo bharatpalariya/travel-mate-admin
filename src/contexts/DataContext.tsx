@@ -181,109 +181,44 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Fetching admin users...');
       
-      // First try to use the admin.listUsers() function via edge function
-      // Since we can't directly access admin functions from client, we'll use a different approach
-      
-      // Try to call an edge function that lists admin users
-      const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('list-admin-users');
-      
-      if (!edgeFunctionError && edgeFunctionData?.users) {
-        console.log('Admin users from edge function:', edgeFunctionData.users);
-        
-        // Filter users with admin role
-        const adminUsersData = edgeFunctionData.users
-          .filter((user: any) => {
-            const userRole = user.user_metadata?.role || user.app_metadata?.role;
-            return userRole === 'admin';
-          })
-          .map((user: any) => ({
-            id: user.id,
-            email: user.email,
-            created_at: user.created_at,
-            last_sign_in_at: user.last_sign_in_at,
-            email_confirmed_at: user.email_confirmed_at,
-            role: user.user_metadata?.role || user.app_metadata?.role || 'admin',
-            user_metadata: user.user_metadata,
-            app_metadata: user.app_metadata
-          }));
-        
-        setAdminUsers(adminUsersData);
-        return;
-      }
-      
-      console.log('Edge function not available, trying RPC function...');
-      
-      // Fallback to RPC function
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_admin_users');
+      // Use the RPC function to get admin users
+      const { data, error } = await supabase.rpc('get_admin_users');
 
-      if (!rpcError && rpcData) {
-        console.log('Raw admin users data from RPC:', rpcData);
-
-        // Format the data from RPC
-        const formattedAdminUsers = rpcData.map((user: any) => ({
-          id: user.id,
-          email: user.email,
-          created_at: user.created_at,
-          last_sign_in_at: user.last_sign_in_at,
-          email_confirmed_at: user.email_confirmed_at,
-          role: user.role || 'admin',
-          user_metadata: user.user_metadata,
-          app_metadata: user.app_metadata
-        }));
-
-        console.log('Formatted admin users from RPC:', formattedAdminUsers);
-        setAdminUsers(formattedAdminUsers);
-        return;
-      }
-      
-      console.log('RPC function failed, using fallback approach...');
-      console.log('RPC Error:', rpcError);
-      
-      // Final fallback: try to get users from auth.users table directly (this might not work due to RLS)
-      const { data: authUsersData, error: authUsersError } = await supabase
-        .from('auth.users')
-        .select('*');
-      
-      if (!authUsersError && authUsersData) {
-        console.log('Auth users data:', authUsersData);
+      if (error) {
+        console.error('Error fetching admin users:', error);
+        console.log('Error details:', error.message, error.details, error.hint);
         
-        const adminUsersFromAuth = authUsersData
-          .filter((user: any) => {
-            const userRole = user.user_metadata?.role || user.app_metadata?.role;
-            return userRole === 'admin';
-          })
-          .map((user: any) => ({
-            id: user.id,
-            email: user.email,
-            created_at: user.created_at,
-            last_sign_in_at: user.last_sign_in_at,
-            email_confirmed_at: user.email_confirmed_at,
-            role: user.user_metadata?.role || user.app_metadata?.role || 'admin',
-            user_metadata: user.user_metadata,
-            app_metadata: user.app_metadata
-          }));
-        
-        setAdminUsers(adminUsersFromAuth);
-        return;
-      }
-      
-      console.log('All methods failed, using current admin as fallback');
-      
-      // Ultimate fallback: show current admin user
-      if (admin) {
-        const fallbackAdminUsers: AdminUser[] = [
+        // Fallback to mock data if RPC fails
+        const mockAdminUsers: AdminUser[] = [
           {
-            id: admin.id,
-            email: admin.email,
-            created_at: admin.createdAt,
+            id: admin?.id || 'current-admin',
+            email: admin?.email || 'admin@travelmate.com',
+            created_at: admin?.createdAt || new Date().toISOString(),
             last_sign_in_at: new Date().toISOString(),
-            email_confirmed_at: admin.createdAt,
+            email_confirmed_at: admin?.createdAt || new Date().toISOString(),
             role: 'admin'
           }
         ];
-        setAdminUsers(fallbackAdminUsers);
+        setAdminUsers(mockAdminUsers);
+        return;
       }
-      
+
+      console.log('Raw admin users data:', data);
+
+      // Format the data from RPC
+      const formattedAdminUsers = data?.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        email_confirmed_at: user.email_confirmed_at,
+        role: user.role || 'admin',
+        user_metadata: user.user_metadata,
+        app_metadata: user.app_metadata
+      })) || [];
+
+      console.log('Formatted admin users:', formattedAdminUsers);
+      setAdminUsers(formattedAdminUsers);
     } catch (error) {
       console.error('Error fetching admin users:', error);
       // Fallback to current admin user
@@ -307,38 +242,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Running debug for admin users...');
       
-      // Get current user info
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user);
-      
-      // Try to call debug RPC function
       const { data, error } = await supabase.rpc('debug_user_roles');
       
       if (error) {
-        console.error('Debug RPC error:', error);
-      } else {
-        console.log('Debug RPC results:', data);
+        console.error('Debug error:', error);
+        return;
       }
       
-      // Try to get session info
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Current session:', session);
+      console.log('Debug results:', data);
       
-      // Try direct query to auth schema (might fail due to permissions)
-      try {
-        const { data: authData, error: authError } = await supabase
-          .from('auth.users')
-          .select('id, email, created_at, user_metadata, app_metadata')
-          .limit(10);
-        
-        if (authError) {
-          console.log('Auth users query error (expected):', authError);
-        } else {
-          console.log('Auth users data:', authData);
-        }
-      } catch (e) {
-        console.log('Auth users query failed (expected):', e);
-      }
+      // Also try to get current user info
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user);
       
     } catch (error) {
       console.error('Debug failed:', error);
