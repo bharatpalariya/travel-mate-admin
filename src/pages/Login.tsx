@@ -126,15 +126,7 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-800 mb-2">Default Admin Credentials</h4>
-            <div className="text-xs text-blue-700 space-y-1">
-              <div><strong>Email:</strong> admin@travelmate.com</div>
-              <div><strong>Password:</strong> TravelAdmin2025!</div>
-            </div>
-          </div>
-
-          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <h4 className="text-sm font-medium text-gray-800 mb-2">Having trouble signing in?</h4>
             <ul className="text-xs text-gray-700 space-y-1">
               <li>• Verify your email and password are correct</li>

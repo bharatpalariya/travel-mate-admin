@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useData } from '../contexts/DataContext';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 interface AdminUser {
@@ -41,49 +40,39 @@ const AdminManagement: React.FC = () => {
   const fetchAdminUsers = async () => {
     setLoading(true);
     try {
-      // Create an edge function call to get admin users
-      const { data, error } = await supabase.functions.invoke('get-admin-users');
+      // Get all users from auth.users table using RPC function
+      const { data, error } = await supabase.rpc('get_admin_users');
       
       if (error) {
         console.error('Error fetching admin users:', error);
-        // Fallback to mock data if edge function fails
-        const mockAdminUsers: AdminUser[] = [
-          {
-            id: 'admin-1',
-            email: 'admin@travelmate.com',
-            created_at: '2024-01-01T00:00:00Z',
-            last_sign_in_at: new Date().toISOString(),
-            email_confirmed_at: '2024-01-01T00:00:00Z',
+        // Fallback: get current session user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setAdminUsers([{
+            id: user.id,
+            email: user.email || '',
+            created_at: user.created_at,
+            last_sign_in_at: user.last_sign_in_at,
+            email_confirmed_at: user.email_confirmed_at,
             role: 'admin'
-          },
-          {
-            id: 'admin-2', 
-            email: 'amitjaju@gmail.com',
-            created_at: '2024-01-01T00:00:00Z',
-            last_sign_in_at: new Date().toISOString(),
-            email_confirmed_at: '2024-01-01T00:00:00Z',
-            role: 'admin'
-          }
-        ];
-        setAdminUsers(mockAdminUsers);
+          }]);
+        }
       } else {
         setAdminUsers(data || []);
       }
     } catch (error) {
       console.error('Error fetching admin users:', error);
       // Show current admin user at minimum
-      const currentUser = supabase.auth.getUser();
-      if (currentUser) {
-        setAdminUsers([
-          {
-            id: 'current-admin',
-            email: 'admin@travelmate.com',
-            created_at: new Date().toISOString(),
-            last_sign_in_at: new Date().toISOString(),
-            email_confirmed_at: new Date().toISOString(),
-            role: 'admin'
-          }
-        ]);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setAdminUsers([{
+          id: user.id,
+          email: user.email || '',
+          created_at: user.created_at,
+          last_sign_in_at: user.last_sign_in_at,
+          email_confirmed_at: user.email_confirmed_at,
+          role: 'admin'
+        }]);
       }
     } finally {
       setLoading(false);
@@ -168,8 +157,22 @@ const AdminManagement: React.FC = () => {
         setFormData({ email: '', password: '', confirmPassword: '' });
         setShowCreateForm(false);
         
-        // Refresh admin users list
-        await fetchAdminUsers();
+        // Add the new user to the list immediately
+        const newAdminUser: AdminUser = {
+          id: data.user.id,
+          email: data.user.email || '',
+          created_at: data.user.created_at,
+          last_sign_in_at: data.user.last_sign_in_at,
+          email_confirmed_at: data.user.email_confirmed_at,
+          role: 'admin'
+        };
+        
+        setAdminUsers(prev => [newAdminUser, ...prev]);
+        
+        // Also refresh the list to get any updates
+        setTimeout(() => {
+          fetchAdminUsers();
+        }, 1000);
       }
     } catch (err: any) {
       console.error('Error creating admin user:', err);
