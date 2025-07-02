@@ -1,7 +1,7 @@
+import { Filter, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Trash2, Filter } from 'lucide-react';
-import { useData } from '../contexts/DataContext';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
+import { useData } from '../contexts/DataContext';
 
 const Bookings: React.FC = () => {
   const { bookings, updateBookingStatus, deleteBooking, loading } = useData();
@@ -128,7 +128,7 @@ const Bookings: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{booking.user_name}</div>
-                        <div className="text-sm text-gray-500">{booking.user_email || 'No email'}</div>
+                        <div className="text-sm text-gray-500">{booking.user_email}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

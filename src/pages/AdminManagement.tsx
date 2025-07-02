@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Shield, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw, Bug } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useData } from '../contexts/DataContext';
+import { AlertCircle, Bug, CheckCircle, Eye, EyeOff, RefreshCw, Shield, UserPlus, Users } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import ConfirmationModal from '../components/UI/ConfirmationModal';
+import { useData } from '../contexts/DataContext';
+import { supabase } from '../lib/supabase';
 
 interface AdminUser {
   id: string;
@@ -30,16 +29,6 @@ const AdminManagement: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: ''
-  });
-
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean;
-    userId: string;
-    userEmail: string;
-  }>({
-    isOpen: false,
-    userId: '',
-    userEmail: ''
   });
 
   useEffect(() => {
@@ -130,26 +119,6 @@ const AdminManagement: React.FC = () => {
       setError(err.message || 'Failed to create admin user');
     } finally {
       setIsCreating(false);
-    }
-  };
-
-  const handleDeleteClick = (user: AdminUser) => {
-    setDeleteModal({
-      isOpen: true,
-      userId: user.id,
-      userEmail: user.email
-    });
-  };
-
-  const handleDeleteConfirm = async () => {
-    try {
-      // Note: Deleting users requires admin privileges and should be done via edge function
-      // For now, we'll show a success message
-      setDeleteModal({ isOpen: false, userId: '', userEmail: '' });
-      setSuccess('Admin user deletion requested. This action requires server-side processing.');
-    } catch (error) {
-      console.error('Error deleting admin user:', error);
-      setError('Failed to delete admin user');
     }
   };
 
@@ -251,7 +220,7 @@ const AdminManagement: React.FC = () => {
           <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <h4 className="text-sm font-medium text-blue-800 mb-2">Admin Role Assignment</h4>
             <p className="text-sm text-blue-700">
-              New users will be created with the "admin" role in their metadata. Only users with this role can access the admin portal.
+              New users will be created with the "admin" role in their metadata. Only users with an email ending in <strong>@travelmate.com</strong> will be assigned the admin role.
             </p>
           </div>
 
@@ -372,9 +341,6 @@ const AdminManagement: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -425,17 +391,6 @@ const AdminManagement: React.FC = () => {
                       Active
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {user.id !== admin?.id && (
-                      <button
-                        onClick={() => handleDeleteClick(user)}
-                        className="text-red-400 hover:text-red-600 transition-colors"
-                        title="Delete Admin User"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -465,16 +420,6 @@ const AdminManagement: React.FC = () => {
           <li>• Monitor admin activity and sign-in logs</li>
         </ul>
       </div>
-
-      <ConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, userId: '', userEmail: '' })}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Admin User"
-        message={`Are you sure you want to delete the admin user "${deleteModal.userEmail}"? This action cannot be undone and will revoke all admin access for this user.`}
-        confirmText="Delete"
-        type="danger"
-      />
     </div>
   );
 };

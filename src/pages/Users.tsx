@@ -1,11 +1,14 @@
+import { Calendar, Eye, Filter, Mail, Search, ToggleLeft, ToggleRight, User, Users } from 'lucide-react';
 import React, { useState } from 'react';
-import { Users, Mail, User, Calendar, Search, Filter, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
+import Modal from '../components/UI/Modal';
 import { useData } from '../contexts/DataContext';
 
 const UsersPage: React.FC = () => {
   const { users, loading, updateUserStatus } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,6 +40,16 @@ const UsersPage: React.FC = () => {
     } catch (error) {
       console.error('Error updating user status:', error);
     }
+  };
+
+  const handleViewUser = (user: any) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null);
   };
 
   if (loading) {
@@ -258,6 +271,7 @@ const UsersPage: React.FC = () => {
                       <button
                         className="text-blue-400 hover:text-blue-600 transition-colors"
                         title="View Details"
+                        onClick={() => handleViewUser(user)}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -348,6 +362,57 @@ const UsersPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* User Details Modal */}
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="User Details" size="sm">
+        {selectedUser && (
+          <div className="flex flex-col items-center space-y-6 p-2">
+            {/* Avatar */}
+            <div className="flex flex-col items-center">
+              {selectedUser.avatar_url ? (
+                <img
+                  src={selectedUser.avatar_url}
+                  alt={selectedUser.full_name || 'User'}
+                  className="h-20 w-20 rounded-full object-cover border-4 border-blue-200 shadow-md mb-2"
+                />
+              ) : (
+                <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-bold text-blue-600 mb-2">
+                  {getInitials(selectedUser.full_name)}
+                </div>
+              )}
+              <div className="text-lg font-semibold text-gray-900 mt-1">{selectedUser.full_name || 'N/A'}</div>
+              <div className="text-xs text-gray-500">User ID: {selectedUser.id.substring(0, 8)}...</div>
+            </div>
+            <div className="w-full space-y-3">
+              <div className="flex items-center space-x-3">
+                <Mail className="w-5 h-5 text-blue-500" />
+                <span className="font-medium text-gray-700">Email:</span>
+                <span className="text-gray-900">{selectedUser.email || 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <User className="w-5 h-5 text-green-500" />
+                <span className="font-medium text-gray-700">Status:</span>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedUser.status)}`}>{selectedUser.status ? selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1) : 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Calendar className="w-5 h-5 text-yellow-500" />
+                <span className="font-medium text-gray-700">Registration Date:</span>
+                <span className="text-gray-900">{selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : 'N/A'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Calendar className="w-5 h-5 text-purple-500" />
+                <span className="font-medium text-gray-700">Last Booking:</span>
+                <span className="text-gray-900">{selectedUser.last_booking ? new Date(selectedUser.last_booking).toLocaleDateString() : 'Never'}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Users className="w-5 h-5 text-pink-500" />
+                <span className="font-medium text-gray-700">Total Bookings:</span>
+                <span className="text-gray-900">{selectedUser.total_bookings ?? 0}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

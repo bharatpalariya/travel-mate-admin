@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, Clock, CheckCircle, XCircle, User, Calendar, Search, Filter, Eye, MessageCircle, AlertCircle, RefreshCw } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
-import Modal from '../components/UI/Modal';
+import { AlertCircle, Calendar, CheckCircle, Clock, Eye, Filter, MessageSquare, RefreshCw, Search, User, XCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import ConfirmationModal from '../components/UI/ConfirmationModal';
+import Modal from '../components/UI/Modal';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 interface HelpRequest {
   id: string;
@@ -195,19 +195,39 @@ const SupportTickets: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string, size: string = 'w-6 h-6') => {
+    let bg = '', icon = null, iconColor = '';
     switch (status) {
       case 'open':
-        return <AlertCircle className="w-4 h-4" />;
+        bg = 'bg-red-100';
+        iconColor = 'text-red-600';
+        icon = <AlertCircle className={`${size} ${iconColor}`} />;
+        break;
       case 'in_progress':
-        return <Clock className="w-4 h-4" />;
+        bg = 'bg-yellow-100';
+        iconColor = 'text-yellow-600';
+        icon = <Clock className={`${size} ${iconColor}`} />;
+        break;
       case 'resolved':
-        return <CheckCircle className="w-4 h-4" />;
+        bg = 'bg-green-100';
+        iconColor = 'text-green-600';
+        icon = <CheckCircle className={`${size} ${iconColor}`} />;
+        break;
       case 'closed':
-        return <XCircle className="w-4 h-4" />;
+        bg = 'bg-gray-200';
+        iconColor = 'text-gray-600';
+        icon = <XCircle className={`${size} ${iconColor}`} />;
+        break;
       default:
-        return <MessageSquare className="w-4 h-4" />;
+        bg = 'bg-gray-100';
+        iconColor = 'text-gray-400';
+        icon = <MessageSquare className={`${size} ${iconColor}`} />;
     }
+    return (
+      <span className={`inline-flex items-center justify-center rounded-full ${bg} shadow-sm border border-white ${size} p-1`}>
+        {icon}
+      </span>
+    );
   };
 
   const getPriorityLevel = (createdAt: string) => {
@@ -489,77 +509,81 @@ const SupportTickets: React.FC = () => {
         size="lg"
       >
         {selectedTicket && (
-          <div className="space-y-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {selectedTicket.subject}
-                </h3>
-                <div className="flex items-center space-x-4 text-sm text-gray-500">
-                  <span className="flex items-center">
-                    <User className="w-4 h-4 mr-1" />
-                    {formatUserId(selectedTicket.user_id)}
-                  </span>
-                  <span className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(selectedTicket.created_at).toLocaleString()}
-                  </span>
+          <div className="bg-white rounded-2xl shadow-lg p-0 overflow-hidden">
+            {/* Header with status icon and badge */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+              <div className="flex items-center space-x-4">
+                {getStatusIcon(selectedTicket.status, 'w-10 h-10')}
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedTicket.subject}</h3>
+                  <div className="flex items-center space-x-3 text-xs text-gray-500">
+                    <span className="flex items-center"><User className="w-4 h-4 mr-1" />{formatUserId(selectedTicket.user_id)}</span>
+                    <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" />{new Date(selectedTicket.created_at).toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                {getStatusIcon(selectedTicket.status)}
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedTicket.status)}`}>
-                  {selectedTicket.status.replace('_', ' ').toUpperCase()}
-                </span>
-              </div>
+              <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${getStatusColor(selectedTicket.status)}`}>{selectedTicket.status.replace('_', ' ')}</span>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Message</h4>
-              <div className="bg-gray-50 rounded-lg p-4">
+            {/* Message Section */}
+            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50">
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">Message</h4>
+              <div className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
                 <p className="text-gray-700 whitespace-pre-wrap">{selectedTicket.message}</p>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Update Status</h4>
-              <div className="flex space-x-2">
+            {/* Status Update Section */}
+            <div className="px-6 py-5 border-b border-gray-100">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Update Status</h4>
+              <div className="flex flex-wrap gap-2">
                 {['open', 'in_progress', 'resolved', 'closed'].map((status) => (
                   <button
                     key={status}
                     onClick={() => handleStatusUpdate(selectedTicket.id, status)}
                     disabled={isUpdating || selectedTicket.status === status}
-                    className={`px-3 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                      selectedTicket.status === status
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border ${selectedTicket.status === status ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
                   >
-                    {status.replace('_', ' ').toUpperCase()}
+                    {getStatusIcon(status, 'w-5 h-5')} <span className="ml-2">{status.replace('_', ' ').toUpperCase()}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-900">Ticket ID:</span>
-                  <p className="text-gray-600 font-mono break-all">{selectedTicket.id}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">User ID:</span>
-                  <p className="text-gray-600 font-mono break-all">{selectedTicket.user_id}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">Created:</span>
-                  <p className="text-gray-600">{new Date(selectedTicket.created_at).toLocaleString()}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">Last Updated:</span>
-                  <p className="text-gray-600">{new Date(selectedTicket.updated_at).toLocaleString()}</p>
-                </div>
+            {/* Details Section */}
+            <div className="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-white">
+              <div>
+                <span className="font-medium text-gray-900">Ticket ID:</span>
+                <p className="text-gray-600 font-mono break-all">{selectedTicket.id}</p>
               </div>
+              <div>
+                <span className="font-medium text-gray-900">User ID:</span>
+                <p className="text-gray-600 font-mono break-all">{selectedTicket.user_id}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-900">Created:</span>
+                <p className="text-gray-600">{new Date(selectedTicket.created_at).toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-900">Last Updated:</span>
+                <p className="text-gray-600">{new Date(selectedTicket.updated_at).toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex justify-end items-center gap-2 px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-2xl">
+              <button
+                onClick={() => setIsDetailModalOpen(false)}
+                className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => handleDeleteClick(selectedTicket)}
+                className="px-4 py-2 rounded-md bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
+              >
+                Delete Ticket
+              </button>
             </div>
           </div>
         )}

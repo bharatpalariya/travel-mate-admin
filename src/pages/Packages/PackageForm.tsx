@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useData } from '../../contexts/DataContext';
 import { DESTINATIONS, ItineraryDay } from '../../types';
 
@@ -26,7 +26,23 @@ const PackageForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isEdit && id) {
+    if (!isEdit) {
+      const saved = localStorage.getItem('createPackageFormData');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // If itinerary is missing or empty, initialize with one day
+        if (!parsed?.itinerary || !Array.isArray(parsed?.itinerary) || parsed?.itinerary?.length === 0) {
+          parsed.itinerary = [{ day: 1, title: '', description: '', activities: [''] }];
+        }
+        setFormData(parsed);
+        return;
+      }
+      // If nothing saved, initialize as before
+      setFormData(prev => ({
+        ...prev,
+        itinerary: [{ day: 1, title: '', description: '', activities: [''] }]
+      }));
+    } else if (isEdit && id) {
       const pkg = packages.find(p => p.id === id);
       if (pkg) {
         setFormData({
@@ -41,14 +57,15 @@ const PackageForm: React.FC = () => {
           status: pkg.status
         });
       }
-    } else {
-      // Initialize with one day for new packages
-      setFormData(prev => ({
-        ...prev,
-        itinerary: [{ day: 1, title: '', description: '', activities: [''] }]
-      }));
     }
   }, [isEdit, id, packages]);
+
+  useEffect(() => {
+    // Only persist for new packages (not edit mode)
+    if (!isEdit) {
+      localStorage.setItem('createPackageFormData', JSON.stringify(formData));
+    }
+  }, [formData, isEdit]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -127,6 +144,10 @@ const PackageForm: React.FC = () => {
         await updatePackage(id, packageData);
       } else {
         await addPackage(packageData);
+      }
+
+      if (!isEdit) {
+        localStorage.removeItem('createPackageFormData');
       }
 
       navigate('/admin/packages');

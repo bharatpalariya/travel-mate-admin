@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Package, Booking, ItineraryDay, UserStats, PaymentStats } from '../types';
+import { Booking, Package, PaymentStats, UserStats } from '../types';
 import { useAuth } from './AuthContext';
 
 interface User {
@@ -179,20 +179,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchAdminUsers = async () => {
     try {
-      console.log('Fetching admin users...');
       
       // Use the RPC function to get admin users
       const { data, error } = await supabase.rpc('get_admin_users');
 
       if (error) {
         console.error('Error fetching admin users:', error);
-        console.log('Error details:', error.message, error.details, error.hint);
         
         // Fallback to mock data if RPC fails
         const mockAdminUsers: AdminUser[] = [
           {
-            id: admin?.id || 'current-admin',
-            email: admin?.email || 'admin@travelmate.com',
+            id: admin?.id || '',
+            email: admin?.email || '',
             created_at: admin?.createdAt || new Date().toISOString(),
             last_sign_in_at: new Date().toISOString(),
             email_confirmed_at: admin?.createdAt || new Date().toISOString(),
@@ -203,7 +201,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      console.log('Raw admin users data:', data);
 
       // Format the data from RPC
       const formattedAdminUsers = data?.map((user: any) => ({
@@ -217,7 +214,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         app_metadata: user.app_metadata
       })) || [];
 
-      console.log('Formatted admin users:', formattedAdminUsers);
       setAdminUsers(formattedAdminUsers);
     } catch (error) {
       console.error('Error fetching admin users:', error);
@@ -240,7 +236,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const debugAdminUsers = async () => {
     try {
-      console.log('Running debug for admin users...');
       
       const { data, error } = await supabase.rpc('debug_user_roles');
       
@@ -249,7 +244,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
-      console.log('Debug results:', data);
       
       // Also try to get current user info
       const { data: { user } } = await supabase.auth.getUser();
